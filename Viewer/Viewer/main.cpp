@@ -18,7 +18,7 @@ int main() {
 		viewer.run();
 	}
 	catch (const std::exception& e) {
-		std::cerr << e.what() << std::endl;
+		BOOST_LOG_TRIVIAL(fatal) << e.what() << ".";
 		return EXIT_FAILURE;
 	}
 

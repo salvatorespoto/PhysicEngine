@@ -18,9 +18,6 @@
     <ClCompile Include="RigidBody3D.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanUtils.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -30,9 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RigidBody3D.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanUtils.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="ViewerApp.h">

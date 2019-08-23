@@ -168,12 +168,10 @@
     <ClCompile Include="RigidBody3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ViewerApp.cpp" />
-    <ClCompile Include="VulkanUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RigidBody3D.h" />
     <ClInclude Include="ViewerApp.h" />
-    <ClInclude Include="VulkanUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini" />
