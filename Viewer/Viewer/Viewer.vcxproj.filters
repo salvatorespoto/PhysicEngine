@@ -24,6 +24,12 @@
     <ClCompile Include="ViewerApp.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanConfig.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RigidBody3D.h">
@@ -32,11 +38,26 @@
     <ClInclude Include="ViewerApp.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanConfig.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="config.ini">
       <Filter>File di risorse</Filter>
     </None>
+    <None Include="shaders\shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Viewer.rc">
+      <Filter>File di risorse</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

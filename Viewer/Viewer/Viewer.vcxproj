@@ -167,15 +167,24 @@
   <ItemGroup>
     <ClCompile Include="RigidBody3D.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="ViewerApp.cpp" />
+    <ClCompile Include="VulkanConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="RigidBody3D.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="ViewerApp.h" />
+    <ClInclude Include="VulkanConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini" />
     <None Include="packages.config" />
+    <None Include="shaders\shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Viewer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
