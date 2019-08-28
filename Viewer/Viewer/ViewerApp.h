@@ -58,6 +58,9 @@ public:
 	// Initialize Vulkan API 
 	void initVulkan();
 	
+	// Draw a frame
+	void drawFrame();
+
 	// Free all allocated resources 
 	void shutDown();
 

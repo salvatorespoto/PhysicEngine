@@ -36,7 +36,6 @@ struct QueueFamilyIds {
 	}
 };
 
-
 /* Store support details for swap chain */
 struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities;
@@ -44,6 +43,8 @@ struct SwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
+
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 /* Utility class to setup and initialize Vulkan API */
 class VulkanConfig
@@ -78,6 +79,25 @@ class VulkanConfig
 	// Views in swap chain images
 	std::vector<VkImageView> swapChainImageViews;
 
+	VkRenderPass renderPass;
+	VkPipeline graphicsPipeline;
+	VkPipelineLayout pipelineLayout;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
+	VkCommandPool commandPool;
+	std::vector<VkCommandBuffer> commandBuffers;
+
+	VkQueue graphicsQueue;
+	VkQueue presentQueue;
+
+	bool framebufferResized = false;
+
+	/* Sync objects */
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
+	std::vector<VkFence> inFlightFences;
+	size_t currentFrame = 0;
+
+
 	void setupValidationLayers();
 	void setupInstanceExtensions();
 	void createInstance();
@@ -91,9 +111,19 @@ class VulkanConfig
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	void setupSwapChain();
 	void setupImageViews();
-
+	void createRenderPass();
 	void createGraphicsPipeline();
 	VkShaderModule createShaderModule(const std::vector<char>& code);
+	void createFramebuffers();
+	void createCommandPool();
+	void createCommandBuffers();
+	void createSyncObjects();
+	void recreateSwapChain();
+	void cleanupSwapChain();
+	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+
+
+
 
 	// Vulkan debug callback 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL vulkanUtilsMessengerCallback(
@@ -124,13 +154,10 @@ public:
 	// A custom util messenger function could be specified from outside, replacing the one in VulkanConfig.cpp
 	VkDebugUtilsMessengerCreateInfoEXT *createUtilsMessengerFunctionInfo = nullptr;
 
-	// Set up Vulkan API
-	void setUp();
-
-	// Clean all resources 
-	void cleanUp();
-
 	VkInstance getInstance() { return instance; };
 
+	void setUp();
+	void drawFrame();
+	void cleanUp();	
 };
 

@@ -59,7 +59,6 @@ void ViewerApp::setupAppWindow() {
 
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	window = glfwCreateWindow
 	(
 		windowWidth,
@@ -108,6 +107,7 @@ void ViewerApp::initVulkan() {
 }
 
 
+
 /* Free all allocated resources */
 void ViewerApp::shutDown() {
 
@@ -129,7 +129,9 @@ void ViewerApp::mainLoop() {
 	BOOST_LOG_TRIVIAL(debug) << "Entering mainloop";
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
+		vulkanConfig.drawFrame();
 	}
 
+	//vkDeviceWaitIdle(device);
 	BOOST_LOG_TRIVIAL(debug) << "Exiting mainloop";
 }
