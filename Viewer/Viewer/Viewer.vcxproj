@@ -91,7 +91,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Workspace\PhysicEngine\Viewer\Viewer\include;C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -113,7 +113,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Workspace\PhysicEngine\Viewer\Viewer\include;C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -165,18 +165,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="glad.c" />
     <ClCompile Include="RigidBody3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="ViewerApp.cpp" />
-    <ClCompile Include="VulkanConfig.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataStructures.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RigidBody3D.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="ViewerApp.h" />
-    <ClInclude Include="VulkanConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini" />

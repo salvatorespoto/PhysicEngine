@@ -1,30 +1,9 @@
 #include "ViewerApp.h"
 
 
-
-
-
-/* Start the Viewer application */
-void ViewerApp::run() {
-
-	// Load configuration file and init logs
-	initUtils();
-
-	// Create the window app using GLSW
-	setupAppWindow();
-	
-	// Config and start Vulkan API
-	initVulkan();
-
-	// Enter the application main loop
-	mainLoop();
-
-	// Free resources
-	shutDown();
-}
-
-
-/* Load App configuration and initialize logs */
+/* 
+ * Load App configuration and initialize logs  
+ */
 void ViewerApp::initUtils() {
 
 	// Init logs 
@@ -35,7 +14,7 @@ void ViewerApp::initUtils() {
 		boost::log::keywords::format = "[%TimeStamp%] [%Severity%] %Message%"
 	);
 	boost::log::add_common_attributes();
-	BOOST_LOG_TRIVIAL(info) << "Logs initialized.";
+	BOOST_LOG_TRIVIAL(info) << "Logs initialized";
 
 	// Load configuration file
 	boost::property_tree::ini_parser::read_ini("config.ini", appProperties);
@@ -54,11 +33,15 @@ void ViewerApp::initUtils() {
 }
 
 
-/* Initialize application window with GLFW */
-void ViewerApp::setupAppWindow() {
+/* 
+ * Initialize application window with GLFW 
+ */
+void ViewerApp::initGLFW() {
 
 	glfwInit();
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	
+	glfwSetErrorCallback(glfwErrorCallback);
+	
 	window = glfwCreateWindow
 	(
 		windowWidth,
@@ -67,71 +50,126 @@ void ViewerApp::setupAppWindow() {
 		nullptr,
 		nullptr
 	);
+	if (!window) {
+		glfwTerminate();
+		throw std::runtime_error("Error initializing GLFW window");
+	}
+	viewportWidth = windowWidth;
+	viewportHeight = windowHeight;
+	
+	glfwSetKeyCallback(window, glfwKeyCallback);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	BOOST_LOG_TRIVIAL(info) << "Application windows initialized with GLFW.";
-}
-
-
-/* Initialize Vulkan API */
-void ViewerApp::initVulkan() {
-
-	/* Configure validation layers */
-	vulkanConfig.enableValidationLayers = boost::lexical_cast<bool>(appProperties.get<std::string>("Vulkan.EnableValidationLayers"));
-	vulkanConfig.validationLayers = { "VK_LAYER_KHRONOS_validation" };
-
-
-	/* Configure required instance extensions */
-	std::vector<const char*> instanceExtensions;
-
-	// Add extensions required from GLFW.
-	uint32_t count = 0;
-	const char** glfwRequiredExtensions;
-	glfwRequiredExtensions = glfwGetRequiredInstanceExtensions(&count);
-	BOOST_LOG_TRIVIAL(debug) << "Required Vulkan Extensions from GLFW:";
-	for (uint32_t i = 0; i < count; i++) BOOST_LOG_TRIVIAL(debug) << " " << glfwRequiredExtensions[i];
-	instanceExtensions.insert(instanceExtensions.end(), glfwRequiredExtensions, glfwRequiredExtensions + count);
-
-	// Add extension required for utils message debug
-	if (vulkanConfig.enableValidationLayers) instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-
-	/* Configure Vulkan instance */
-	vulkanConfig.applicationName = "Physic Engine Viewer";
-	vulkanConfig.enableCreateGLFWSurface = true;
-	vulkanConfig.glfwWindow = window;
-	vulkanConfig.instanceExtensions = instanceExtensions;
-	vulkanConfig.deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-
-	/* Initialize Vulkan API */
-	vulkanConfig.setUp();
+	BOOST_LOG_TRIVIAL(info) << "Application windows initialized with GLFW";
 }
 
 
 
-/* Free all allocated resources */
-void ViewerApp::shutDown() {
+/*
+ * Initialize application window with GLFW
+ */
+void ViewerApp::initOpenGL() {
 
-	vulkanConfig.cleanUp();
+	glfwMakeContextCurrent(window);
+	glfwGetFramebufferSize(window, &viewportWidth, &viewportHeight);
 
-	glfwDestroyWindow(window);
-	BOOST_LOG_TRIVIAL(debug) << "GLFW Windows destroyed";
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		BOOST_LOG_TRIVIAL(error) << "Failed to initialize extension loader library GLAD";
+		return;
+	}
 
-	glfwTerminate();
-	BOOST_LOG_TRIVIAL(debug) << "GLFW terminated";
-
-	BOOST_LOG_TRIVIAL(debug) << "All resources freed";
+	BOOST_LOG_TRIVIAL(info) << "OpenGL initialized";
 }
 
 
-/* Application main loop */
+/*
+ * Error callback used from GLFW
+ */
+void ViewerApp::glfwErrorCallback(int error, const char* description) {
+	BOOST_LOG_TRIVIAL(error) << "GLFW Error: " << description;
+}
+
+
+/*
+ * Callback used from GLFW when a key is pressed
+ */
+void ViewerApp::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+
+/*
+ * Callback called on framebuffer resize
+ */
+void ViewerApp::framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+
+/*
+ * Process window inputs
+ */
+void ViewerApp::processInput()
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+}
+
+
+/*
+ * Start the Viewer application
+ */
+void ViewerApp::run() {
+
+	initUtils();		// Load configuration file and init logs
+	initGLFW();			// Init the application window using GLWF library
+	initOpenGL();		// Init OpenGL library
+	mainLoop();			// Enter the viewer main loop
+	shutDown();			// Free resources
+}
+
+
+/*
+ * Application main loop
+ */
 void ViewerApp::mainLoop() {
 
 	BOOST_LOG_TRIVIAL(debug) << "Entering mainloop";
+
 	while (!glfwWindowShouldClose(window)) {
+
+		processInput();
+		glfwSwapBuffers(window);
+		
+		// Poll events calling appropriate callbacks
 		glfwPollEvents();
-		vulkanConfig.drawFrame();
+
 	}
 
-	//vkDeviceWaitIdle(device);
 	BOOST_LOG_TRIVIAL(debug) << "Exiting mainloop";
 }
+
+
+/* 
+ * Free all allocated resources 
+ */
+void ViewerApp::shutDown() {
+
+	glfwDestroyWindow(window);
+	BOOST_LOG_TRIVIAL(debug) << "GLFW Windows destroyed";
+	
+	glfwTerminate();
+	BOOST_LOG_TRIVIAL(debug) << "GLFW terminated";
+
+	BOOST_LOG_TRIVIAL(info) << "All resources freed";
+}
+
+

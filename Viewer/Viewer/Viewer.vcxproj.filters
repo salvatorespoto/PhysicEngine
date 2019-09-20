@@ -24,10 +24,10 @@
     <ClCompile Include="ViewerApp.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanConfig.cpp">
+    <ClCompile Include="Utils.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="Utils.cpp">
+    <ClCompile Include="glad.c">
       <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,13 +38,13 @@
     <ClInclude Include="ViewerApp.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanConfig.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructures.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

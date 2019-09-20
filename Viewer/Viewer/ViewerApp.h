@@ -9,61 +9,58 @@
 #include <boost/log/utility/setup/filter_parser.hpp>
 #include <boost/range/adaptors.hpp>
 
-#define GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-#include <stdexcept>
-#include <vector>
-#include <cstring>
-#include <cstdlib>
-#include <optional>
-#include <set>
-#include <functional>
-#include <numeric>
-
-#include "VulkanConfig.h"
+#include "include/glad/glad.h"
 
 
-/* Vulkan remove debug validation layer callback */
-void DestroyDebugUtilsMessengerEXT(VkInstance instance, 
-	VkDebugUtilsMessengerEXT debugMessenger, 
-	const VkAllocationCallbacks* pAllocator);
 
-
-/* This call initializa and run the Viewer application */
+/* 
+ *  This class initialize and run the Viewer application 
+ */
 class ViewerApp {
 
 private:
 
 	boost::property_tree::ptree appProperties;				// Stores app properties loaded from configuration file
-	int windowWidth;										// App window width
-	int windowHeight;										// App window height
-	GLFWwindow* window;										// App window instance
-
-	VulkanConfig vulkanConfig;								// Util class to configure and initialize Vulkan
 	
+	GLFWwindow* window;										// App window instance
+	int windowWidth;										
+	int windowHeight;										
+	int viewportWidth;										
+	int viewportHeight;										
+
 	
 public:
 	
-	// Start the Viewer application 
-	void run();
-	
+	// Callback for errors reported from GLFW library
+	static void glfwErrorCallback(int error, const char* description);
+
+	// Callback used from GLFW when a key is pressed
+	static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+	// Callback called on framebuffer resize
+	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+
 	// Load App configuration and initialize logs 
 	void initUtils();
 
 	// Initialize application window with GLFW 
-	void setupAppWindow();
+	void initGLFW();
 
-	// Initialize Vulkan API 
-	void initVulkan();
-	
-	// Draw a frame
-	void drawFrame();
+	// Init OpenGL
+	void initOpenGL();
 
-	// Free all allocated resources 
-	void shutDown();
+	// Start the Viewer application 
+	void run();
+
+	// Process window inputs
+	void processInput();
 
 	// Application main loop 
 	void mainLoop();
+
+	// Free all allocated resources 
+	void shutDown();
 };
