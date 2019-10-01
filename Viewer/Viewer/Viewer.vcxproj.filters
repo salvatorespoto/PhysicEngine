@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RigidBody3D.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -30,11 +27,26 @@
     <ClCompile Include="glad.c">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\RigidBody3D.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\ConvexPolyhedron.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\IntersectionTester.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh3D.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RigidBody3D.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="ViewerApp.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -44,7 +56,34 @@
     <ClInclude Include="Utils.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="DataStructures.h">
+    <ClInclude Include="Shader.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\tini_obj_loader.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\RigidBody3D.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\ConvexPolyhedron.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\IntersectionTester.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\external\tini_obj_loader.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\commons.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex3D.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh3D.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

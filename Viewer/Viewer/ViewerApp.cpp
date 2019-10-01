@@ -1,169 +1,306 @@
+// Copyright 2019 Salvatore Spoto
+
 #include "ViewerApp.h"
 
 
-/* 
- * Load App configuration and initialize logs  
- */
-void ViewerApp::initUtils() {
+ViewerApp::ViewerApp() : Window(NULL), WindowWidth(0), WindowHeight(0), ViewportWidth(0), ViewportHeight(0)
+{}
 
-	// Init logs 
-	boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
-	boost::log::add_file_log
-	(
-		boost::log::keywords::file_name = "viewer.log",
-		boost::log::keywords::format = "[%TimeStamp%] [%Severity%] %Message%"
-	);
-	boost::log::add_common_attributes();
-	BOOST_LOG_TRIVIAL(info) << "Logs initialized";
 
-	// Load configuration file
-	boost::property_tree::ini_parser::read_ini("config.ini", appProperties);
-	BOOST_LOG_TRIVIAL(info) << "Configuration file 'config.ini' loaded";
-
-	// Set logs level
-	BOOST_LOG_TRIVIAL(info) << "Setting logs level to " << appProperties.get<std::string>("Logs.Level");
-	boost::log::core::get()->set_filter
-	(
-		boost::log::trivial::severity >= boost::lexical_cast<boost::log::trivial::severity_level>(appProperties.get<std::string>("Logs.Level"))
-	);
-
-	// Load configuration variables from config.ini
-	windowWidth = boost::lexical_cast<int>(appProperties.get<std::string>("Application.Width"));
-	windowHeight = boost::lexical_cast<int>(appProperties.get<std::string>("Application.Width"));
+ViewerApp& ViewerApp::GetInstance() 
+{
+	static ViewerApp instance;
+	return instance;
 }
 
 
-/* 
- * Initialize application window with GLFW 
- */
-void ViewerApp::initGLFW() {
+void ViewerApp::Run() 
+{
+	InitUtils();
+	InitGLFW();
+	InitOpenGL();
+	LoadMeshes();
+	RenderLoop();
+	ShutDown();
+}
 
-	glfwInit();
+
+void ViewerApp::InitUtils() 
+{
+	// Load configuration file
+	boost::property_tree::ini_parser::read_ini("config.ini", ViewerProperties);
+	BOOST_LOG_TRIVIAL(info) << "Loaded config.ini";
 	
+	// Init logs 
+	boost::log::register_simple_formatter_factory<boost::log::trivial::severity_level, char>("Severity");
+	try 
+	{
+		std::string logFileName = ViewerProperties.get<std::string>("Logs.FileName");
+		// Log to file instead of stdout if Logs.File properties existsi in config.ini
+		boost::log::add_file_log
+		(
+			boost::log::keywords::file_name = logFileName,
+			boost::log::keywords::format = "[%TimeStamp%] [%Severity%] %Message%"
+		);
+	}
+	catch (const boost::property_tree::ptree_bad_path& e) 
+	{
+		BOOST_LOG_TRIVIAL(info) << e.what() << " " << "No logs file name specified, logging to stdout";
+	}
+	boost::log::add_common_attributes();
+	BOOST_LOG_TRIVIAL(info) << "Logs initialized";
+
+	// Set logs level
+	BOOST_LOG_TRIVIAL(info) << "Setting logs level to " << ViewerProperties.get<std::string>("Logs.Level");
+	boost::log::core::get()->set_filter
+	(
+		boost::log::trivial::severity 
+			>= boost::lexical_cast<boost::log::trivial::severity_level>(ViewerProperties.get<std::string>("Logs.Level"))
+	);
+
+	CurrentPath = boost::filesystem::current_path().string();
+}
+
+
+void ViewerApp::InitGLFW() 
+{
+	glfwInit();
 	glfwSetErrorCallback(glfwErrorCallback);
 	
-	window = glfwCreateWindow
-	(
-		windowWidth,
-		windowHeight,
-		"Physics engine viewer",
-		nullptr,
-		nullptr
-	);
-	if (!window) {
-		glfwTerminate();
-		throw std::runtime_error("Error initializing GLFW window");
-	}
-	viewportWidth = windowWidth;
-	viewportHeight = windowHeight;
+	WindowWidth = boost::lexical_cast<int>(ViewerProperties.get<std::string>("Application.Width"));
+	WindowHeight = boost::lexical_cast<int>(ViewerProperties.get<std::string>("Application.Height"));
 	
-	glfwSetKeyCallback(window, glfwKeyCallback);
-	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-	
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	Window = glfwCreateWindow
+	(
+		WindowWidth,
+		WindowWidth,
+		"Physics engine viewer",
+		nullptr,
+		nullptr
+	);
+	
+	if (!Window) 
+	{
+		glfwTerminate();
+		throw std::runtime_error("Error initializing GLFW window");
+	}
+
+	ViewportWidth = WindowWidth;
+	ViewportHeight = WindowHeight;
+	
+	glfwSetFramebufferSizeCallback(Window, FramebufferSizeCallback);
+	
 	BOOST_LOG_TRIVIAL(info) << "Application windows initialized with GLFW";
 }
 
 
-
-/*
- * Initialize application window with GLFW
- */
-void ViewerApp::initOpenGL() {
-
-	glfwMakeContextCurrent(window);
-	glfwGetFramebufferSize(window, &viewportWidth, &viewportHeight);
-
+void ViewerApp::InitOpenGL() 
+{
+	glfwMakeContextCurrent(Window);
+	glfwGetFramebufferSize(Window, &ViewportWidth, &ViewportHeight);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		BOOST_LOG_TRIVIAL(error) << "Failed to initialize extension loader library GLAD";
 		return;
 	}
 
+	// Load and compile shaders 
+	boost::filesystem::path shaderPath(CurrentPath);
+	shaderPath.append(ViewerProperties.get<std::string>("Shader.Directory"));
+
+	std::vector<std::string> vertexShaderList;
+	Utils::ListFilesInDirectory(shaderPath, Shader::VERTEX_SHADER_EXTENSION, vertexShaderList);
+	for (std::string vertexShaderName : vertexShaderList)
+	{
+		ShadersMap[vertexShaderName] = new Shader(boost::filesystem::path(shaderPath).append(vertexShaderName));
+	}
+
+	std::vector<std::string> fragmentShaderList;
+	Utils::ListFilesInDirectory(shaderPath, Shader::FRAGMENT_SHADER_EXTENSION, fragmentShaderList);
+	for (std::string fragmentShaderName : fragmentShaderList)
+	{
+		ShadersMap[fragmentShaderName] = new Shader(boost::filesystem::path(shaderPath).append(fragmentShaderName));
+	}
+
+	// TODO evaluate if move this code in a separate function / class that handle shader programs
+	// Build shader programs 
+	ShaderProgram = glCreateProgram();
+	glAttachShader(ShaderProgram, ShadersMap["shader.vs"]->Id);
+	glAttachShader(ShaderProgram, ShadersMap["shader.fs"]->Id);
+	glLinkProgram(ShaderProgram);
+	
+	int success;
+	char infoLog[1024];
+	glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(ShaderProgram, 512, NULL, infoLog);
+		BOOST_LOG_TRIVIAL(error) << "Failed to build shader program";
+	}
+
 	BOOST_LOG_TRIVIAL(info) << "OpenGL initialized";
+
+	// Init camera values
+	CameraFPS.TranslationSpeed = 0.01f;
+	CameraFPS.RotationSpeed = 0.001f;
+	CameraFPS.ZoomSpeed = 0.01f;
+	TrackBall.IsTrackBall = true;
 }
 
 
-/*
- * Error callback used from GLFW
- */
-void ViewerApp::glfwErrorCallback(int error, const char* description) {
-	BOOST_LOG_TRIVIAL(error) << "GLFW Error: " << description;
-}
-
-
-/*
- * Callback used from GLFW when a key is pressed
- */
-void ViewerApp::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
-
-
-/*
- * Callback called on framebuffer resize
- */
-void ViewerApp::framebufferSizeCallback(GLFWwindow* window, int width, int height)
+void ViewerApp::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 }
 
 
-/*
- * Process window inputs
- */
-void ViewerApp::processInput()
+void ViewerApp::LoadMeshes()
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
+	boost::filesystem::path meshDirectoryPath(CurrentPath);
+	meshDirectoryPath.append(ViewerProperties.get<std::string>("Mesh.Directory"));
+	
+	std::vector<std::string> objFilesList;
+	Utils::ListFilesInDirectory(meshDirectoryPath, ".obj", objFilesList);
+	for (std::string objFileName : objFilesList)
+	{
+		MeshList.push_back(new Mesh3D(boost::filesystem::path(meshDirectoryPath).append(objFileName)));
+	}
 }
 
 
-/*
- * Start the Viewer application
- */
-void ViewerApp::run() {
-
-	initUtils();		// Load configuration file and init logs
-	initGLFW();			// Init the application window using GLWF library
-	initOpenGL();		// Init OpenGL library
-	mainLoop();			// Enter the viewer main loop
-	shutDown();			// Free resources
+void ViewerApp::ProcessInput()
+{
+	HandleKeyboardInput();
+	HandleMouseInput();
 }
 
 
-/*
- * Application main loop
- */
-void ViewerApp::mainLoop() {
+void ViewerApp::UpdateCamera()
+{
+	// Compute the projection matrix
+	glm::mat4 projection = glm::perspective(glm::radians(CameraFPS.FieldOfViewValue),
+		(float) ViewportWidth / (float) ViewportHeight, 0.10f, 100.0f);
+
+	// Compute the view matrix
+	glm::mat4 view = CameraFPS.GetViewMatrix();
+}
+
+
+void ViewerApp::HandleKeyboardInput() 
+{
+	// ESC: exit application
+	if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(Window, true);
+
+	// Handle camera movements
+	if (glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS)
+		CameraFPS.Translate(Camera::FORWARD, 1.0f);
+	if (glfwGetKey(Window, GLFW_KEY_S) == GLFW_PRESS)
+		CameraFPS.Translate(Camera::BACKWARD, 1.0f);
+	if (glfwGetKey(Window, GLFW_KEY_A) == GLFW_PRESS)
+		CameraFPS.Translate(Camera::LEFT, 1.0f);
+	if (glfwGetKey(Window, GLFW_KEY_D) == GLFW_PRESS)
+		CameraFPS.Translate(Camera::RIGHT, 1.0f);
+	if (glfwGetKey(Window, GLFW_KEY_R) == GLFW_PRESS)
+		CameraFPS.Translate(Camera::UP, 1.0f);
+	if (glfwGetKey(Window, GLFW_KEY_F) == GLFW_PRESS)
+		CameraFPS.Translate(Camera::DOWN, 1.0f);
+}
+
+
+void ViewerApp::HandleMouseInput()
+{
+	double xCoordinate, yCoordinate;
+	glfwGetCursorPos(Window, &xCoordinate, &yCoordinate);
+
+	// Ignore first input coordinates because we do not have a previous valid value
+	if (MouseXCoordinate == 99999.0f || MouseYCoordinate == 99999.0f) {
+		MouseXCoordinate = xCoordinate;
+		MouseYCoordinate = yCoordinate;
+		return;
+	}
+	
+	// Compute offsets of the mouse movement
+	// xOffset and yOffset will be the the yaw and pitch of the camera movement
+ 	double xOffset = xCoordinate - MouseXCoordinate;
+	double yOffset = yCoordinate - MouseYCoordinate;
+
+	MouseXCoordinate = xCoordinate;
+	MouseYCoordinate = yCoordinate;
+
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+		
+		// Left mouse click is the First Person Shooter camera
+		// yaw and pitch are counterclockwise movement of the camera around Y ans X axis 
+		// so for example a positive xOffset (mouse move to the right) have to be inverted to get
+		// a rotation to the right (clockwise). The same for pitch.
+		CameraFPS.Rotate(-xOffset, -yOffset, 0.0f, 1.0f);
+	}
+	else if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+		
+		// Right mouse button rotate the trackball 
+		TrackBall.Rotate(-xOffset, -yOffset, 0.0f, 1.0f);
+	}
+}
+
+
+void ViewerApp::RenderLoop() 
+{
+
+	CameraFPS.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+	CameraFPS.Rotate(0.0f, 45.0f, 0.0f, 1.0f);
 
 	BOOST_LOG_TRIVIAL(debug) << "Entering mainloop";
 
-	while (!glfwWindowShouldClose(window)) {
-
-		processInput();
-		glfwSwapBuffers(window);
-		
-		// Poll events calling appropriate callbacks
+	while (!glfwWindowShouldClose(Window)) 
+	{
+		ProcessInput();
+		UpdateCamera();
+		DrawWorld();
+		glfwSwapBuffers(Window);
 		glfwPollEvents();
-
 	}
 
 	BOOST_LOG_TRIVIAL(debug) << "Exiting mainloop";
 }
 
 
-/* 
- * Free all allocated resources 
- */
-void ViewerApp::shutDown() {
+void ViewerApp::DrawWorld()
+{
 
-	glfwDestroyWindow(window);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(ShaderProgram);
+
+	GLuint viewLocation = glGetUniformLocation(ShaderProgram, "view");
+	glm::mat4 view = CameraFPS.GetViewMatrix();
+	glm::mat4 viewTrackball = TrackBall.GetViewMatrix();
+
+	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view * viewTrackball));
+	
+	glm::mat4 projection = glm::perspective (glm::radians(90.0f), (float)ViewportWidth / (float)ViewportHeight, 0.1f, 100.0f);
+	GLuint projectionLocation = glGetUniformLocation(ShaderProgram, "projection");
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr (projection));
+	 
+	for (Mesh3D* mesh : MeshList) 
+	{
+		mesh->Draw();
+	}
+
+	glUseProgram(0);
+}
+
+
+void ViewerApp::ShutDown() 
+{
+
+	glfwDestroyWindow(Window);
 	BOOST_LOG_TRIVIAL(debug) << "GLFW Windows destroyed";
 	
 	glfwTerminate();
@@ -173,3 +310,7 @@ void ViewerApp::shutDown() {
 }
 
 
+void glfwErrorCallback(int error, const char* description) 
+{
+	BOOST_LOG_TRIVIAL(error) << "GLFW Error: " << description;
+}

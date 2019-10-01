@@ -1,20 +1,21 @@
+// Copyright 2019 Salvatore Spoto
+
 #include "Utils.h"
 
-using std::vector;
-using std::string;
 
-vector<char> Utils::readFile(const string& filename) {
-	
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
-	if (!file.is_open()) throw std::runtime_error("failed to open file!");
-	
-	size_t fileSize = (size_t)file.tellg();
-	vector<char> buffer(fileSize);
+void Utils::ListFilesInDirectory(const boost::filesystem::path& root, std::string_view extension, std::vector<std::string>& outFileList)
+{
+	namespace fs = boost::filesystem;
 
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
+	if (!fs::exists(root) || !fs::is_directory(root)) return;
 
-	file.close();
-
-	return buffer;
+	fs::recursive_directory_iterator it(root);
+	fs::recursive_directory_iterator endit;
+	while (it != endit)
+	{
+		std::string name = it->path().filename().string();
+		if (fs::is_regular_file(*it) && it->path().extension() == extension.data()) 
+			outFileList.push_back(it->path().filename().string());
+		++it;
+	}
 }

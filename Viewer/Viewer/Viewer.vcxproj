@@ -165,17 +165,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="include\PhysicEngine\ConvexPolyhedron.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="RigidBody3D.cpp" />
+    <ClCompile Include="include\PhysicEngine\IntersectionTester.cpp" />
+    <ClCompile Include="Mesh3D.cpp" />
+    <ClCompile Include="include\PhysicEngine\RigidBody3D.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="ViewerApp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DataStructures.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="include\PhysicEngine\commons.h" />
+    <ClInclude Include="include\PhysicEngine\ConvexPolyhedron.h" />
+    <ClInclude Include="include\PhysicEngine\external\tini_obj_loader.h" />
+    <ClInclude Include="include\tini_obj_loader.h" />
+    <ClInclude Include="include\PhysicEngine\IntersectionTester.h" />
+    <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="RigidBody3D.h" />
+    <ClInclude Include="include\PhysicEngine\RigidBody3D.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Vertex3D.h" />
     <ClInclude Include="ViewerApp.h" />
   </ItemGroup>
   <ItemGroup>
