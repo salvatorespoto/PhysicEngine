@@ -7,10 +7,18 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #include "include/glad/glad.h"
+
 
 #include "Vertex3D.h"
 
@@ -42,14 +50,19 @@ public:
 	 */
 	void LoadFromObjFile(const boost::filesystem::path& objFilePath);
 
+	/** Get the model transformation matrix */
+	glm::mat4 GetModelMatrix();
 
 	/** Draw the mesh */
-	void Draw();
+	void Draw(GLuint shaderProgramId);
 
 private:
 
 	std::vector<Vertex3D> vertices;
 	std::vector<unsigned int> indices;
+
+	/** The mesh model transfrom matrix */
+	glm::mat4 ModelMatrix = glm::mat4(1.0f);
 
 	/** Vertex Array Object */
 	unsigned int VAO;

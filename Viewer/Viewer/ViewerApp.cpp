@@ -252,8 +252,8 @@ void ViewerApp::HandleMouseInput()
 void ViewerApp::RenderLoop() 
 {
 
-	CameraFPS.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
-	CameraFPS.Rotate(0.0f, 45.0f, 0.0f, 1.0f);
+	//CameraFPS.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
+	//CameraFPS.Rotate(0.0f, 45.0f, 0.0f, 1.0f);
 
 	BOOST_LOG_TRIVIAL(debug) << "Entering mainloop";
 
@@ -272,16 +272,26 @@ void ViewerApp::RenderLoop()
 
 void ViewerApp::DrawWorld()
 {
-
+	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(ShaderProgram);
 
+	// Setup light
+	glm::vec3 lightPosition(1.2f, 1.0f, 2.0f);
+	glUniform3f(glGetUniformLocation(ShaderProgram, "lightPosition"), lightPosition.x, lightPosition.y, lightPosition.z);
+	float ambientStrength = 1.0f;
+	glUniform1f(glGetUniformLocation(ShaderProgram, "ambientStrength"), ambientStrength);
+	glm::vec3 lightColor(0.0f, 1.0f, 0.0f);
+	glUniform3f(glGetUniformLocation(ShaderProgram, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
+	glm::vec3 meshColor(1.0f, 0.5f, 0.31f);
+	glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+
+	// Setup View Matrix
 	GLuint viewLocation = glGetUniformLocation(ShaderProgram, "view");
 	glm::mat4 view = CameraFPS.GetViewMatrix();
 	glm::mat4 viewTrackball = TrackBall.GetViewMatrix();
-
 	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view * viewTrackball));
 	
 	glm::mat4 projection = glm::perspective (glm::radians(90.0f), (float)ViewportWidth / (float)ViewportHeight, 0.1f, 100.0f);
@@ -290,7 +300,7 @@ void ViewerApp::DrawWorld()
 	 
 	for (Mesh3D* mesh : MeshList) 
 	{
-		mesh->Draw();
+		mesh->Draw(ShaderProgram);
 	}
 
 	glUseProgram(0);
