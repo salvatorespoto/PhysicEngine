@@ -283,7 +283,7 @@ void ViewerApp::DrawWorld()
 	glUniform3f(glGetUniformLocation(ShaderProgram, "lightPosition"), lightPosition.x, lightPosition.y, lightPosition.z);
 	float ambientStrength = 1.0f;
 	glUniform1f(glGetUniformLocation(ShaderProgram, "ambientStrength"), ambientStrength);
-	glm::vec3 lightColor(0.0f, 1.0f, 0.0f);
+	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 	glUniform3f(glGetUniformLocation(ShaderProgram, "lightColor"), lightColor.x, lightColor.y, lightColor.z);
 	glm::vec3 meshColor(1.0f, 0.5f, 0.31f);
 	glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
