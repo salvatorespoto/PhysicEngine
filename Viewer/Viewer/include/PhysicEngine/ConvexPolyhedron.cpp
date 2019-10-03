@@ -18,7 +18,7 @@ ConvexPolyhedron::ConvexPolyhedron(std::vector<glm::vec3>& vertices, std::vector
 		f.normal = glm::normalize(glm::cross(edge0, edge1));
 	}
 
-	ComputeOrientedBoundingBox();
+	//ComputeOrientedBoundingBox();
 	//ComputeCenterOfMassAndIntertiaTensor();
 	
 }

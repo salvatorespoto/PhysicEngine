@@ -41,6 +41,12 @@ class Mesh3D
 
 public:
 
+	/** Show / hide convex hull */
+	bool RenderConvexHull = false;
+
+	/** Show / hide model */
+	bool RenderModel = true;
+
 	/** Load mesh Exception */
 	struct LoadMeshException : public std::exception
 	{
@@ -68,15 +74,18 @@ public:
 	void Draw(GLuint shaderProgramId);
 
 private:
-
+	
 	/** Rendering data for the model mesh */
 	VAOAttributes modelVAO;
 
-	/** The mesh model transfrom matrix */
-	glm::mat4 ModelMatrix = glm::mat4(1.0f);
-
 	/** Rendering data for the hull mesh */
 	VAOAttributes hullVAO;
+
+	/** Rendering data for the center of mass */
+	VAOAttributes centerOfMassVAO;
+
+	/** The mesh model transfrom matrix */
+	glm::mat4 ModelMatrix = glm::mat4(1.0f);
 
 	/** Convex hull used from the physic engine */
 	PhysicEngine::ConvexPolyhedron* physicConvexHull;

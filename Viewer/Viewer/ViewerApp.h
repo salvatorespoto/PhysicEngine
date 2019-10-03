@@ -61,6 +61,12 @@ public:
 
 private:
 
+	/** Show / hide object models */
+	bool RenderModel = true;
+
+	/** Show / hide object convex hull*/
+	bool RenderConvexHull = false;
+
 	/** Handle to the current window */
 	GLFWwindow* Window;				
 

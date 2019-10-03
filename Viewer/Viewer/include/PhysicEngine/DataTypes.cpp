@@ -19,8 +19,9 @@ ConvexPolyhedron::ConvexPolyhedron(std::vector<glm::vec3>& vertices, std::vector
 		Faces.push_back(f);
 	}
 
+	ComputeCenterOfMassAndIntertiaTensor();	
 	//ComputeOrientedBoundingBox();
-	//ComputeCenterOfMassAndIntertiaTensor();	
+	
 }
 
 
@@ -57,9 +58,8 @@ void ConvexPolyhedron::ComputeCenterOfMassAndIntertiaTensor() {
 		Vertex v2 = Vertices[face.vId[2]];
 
 		// Get cross product of edges [v1-v0] x [v2-v1] 
-		glm::vec3 edge0 = Vertices[face.vId[1]] - Vertices[face.vId[0]];
-		
-		glm::vec3 edge1 = Vertices[face.vId[2]] - Vertices[face.vId[0]];
+		glm::vec3 edge0 = v1 - v0;
+		glm::vec3 edge1 = v2 - v0;
 		glm::vec3 d = glm::cross(edge0, edge1);
 
 		float f1x, f2x, f3x, f1y, f2y, f3y, f1z, f2z, f3z, g0x, g1x, g2x, g0y, g1y, g2y, g0z, g1z, g2z;
@@ -68,16 +68,16 @@ void ConvexPolyhedron::ComputeCenterOfMassAndIntertiaTensor() {
 		SubExpression(v0.y, v1.y, v2.y, f1y, f2y, f3y, g0y, g1y, g2y);
 		SubExpression(v0.z, v1.z, v2.z, f1z, f2z, f3z, g0z, g1z, g2z);
 		
-		integral[0] = d.x * f1x;
-		integral[1] = d.x * f2x;
-		integral[2] = d.y * f2y;
-		integral[3] = d.z * f2z;
-		integral[4] = d.x * f3x;
-		integral[5] = d.y * f3y;
-		integral[6] = d.z * f3z;
-		integral[7] = d.x * (v0.y * g0x + v1.y * g1x + v2.y * g2x);
-		integral[8] = d.x * (v0.z * g0y + v1.z * g1y + v2.z * g2y);
-		integral[9] = d.x * (v0.x * g0z + v1.x * g1z + v2.x * g2z);
+		integral[0] += d.x * f1x;
+		integral[1] += d.x * f2x;
+		integral[2] += d.y * f2y;
+		integral[3] += d.z * f2z;
+		integral[4] += d.x * f3x;
+		integral[5] += d.y * f3y;
+		integral[6] += d.z * f3z;
+		integral[7] += d.x * (v0.y * g0x + v1.y * g1x + v2.y * g2x);
+		integral[8] += d.y * (v0.z * g0y + v1.z * g1y + v2.z * g2y);
+		integral[9] += d.z * (v0.x * g0z + v1.x * g1z + v2.x * g2z);
 	}
 
 	integral[0] *= oneDiv6;
@@ -91,27 +91,27 @@ void ConvexPolyhedron::ComputeCenterOfMassAndIntertiaTensor() {
 	integral[8] *= oneDiv120;
 	integral[9] *= oneDiv120;
 
-	mass = integral[0];
+	Mass = integral[0];
 
-	centerOfMass.x = integral[1] / mass;
-	centerOfMass.y = integral[2] / mass;
-	centerOfMass.z = integral[3] / mass;
+	CenterOfMass.x = integral[1] / Mass;
+	CenterOfMass.y = integral[2] / Mass;
+	CenterOfMass.z = integral[3] / Mass;
 
 	// Intertia tensor relative to world origin
-	intertiaTensor[1][1] = integral[5] + integral[6]; //xx
-	intertiaTensor[2][2] = integral[4] + integral[6]; //yy
-	intertiaTensor[2][2] = integral[4] + integral[5]; //zz
-	intertiaTensor[1][2] = integral[7]; //xy
-	intertiaTensor[2][3] = integral[8]; //yz
-	intertiaTensor[1][3] = integral[9]; //xz
+	IntertiaTensor[0][0] = integral[5] + integral[6]; // xx
+	IntertiaTensor[1][1] = integral[4] + integral[6]; // yy
+	IntertiaTensor[2][2] = integral[4] + integral[5]; // zz
+	IntertiaTensor[0][1] = IntertiaTensor[1][0] = -integral[7]; // xy, yx
+	IntertiaTensor[1][2] = IntertiaTensor[2][1] = -integral[8]; //yz, zy
+	IntertiaTensor[0][2] = IntertiaTensor[2][0] = -integral[9];  //xz, zx
 
 	// Intertia tensor relative to center of mass
-	intertiaTensor[1][1] = mass * (centerOfMass.y * centerOfMass.y + centerOfMass.z * centerOfMass.z); //xx
-	intertiaTensor[2][2] = mass * (centerOfMass.z * centerOfMass.z + centerOfMass.x * centerOfMass.x); //yy
-	intertiaTensor[3][3] = mass * (centerOfMass.x * centerOfMass.x + centerOfMass.y * centerOfMass.y); //zz
-	intertiaTensor[1][2] = mass * centerOfMass.x * centerOfMass.y; //xy
-	intertiaTensor[2][1] = mass * centerOfMass.y * centerOfMass.z; //yz
-	intertiaTensor[1][3] = mass * centerOfMass.z * centerOfMass.x; // xz
+	IntertiaTensor[0][0] -= Mass * (CenterOfMass.y * CenterOfMass.y + CenterOfMass.z * CenterOfMass.z);
+	IntertiaTensor[1][1] -= Mass * (CenterOfMass.z * CenterOfMass.z + CenterOfMass.x * CenterOfMass.x);
+	IntertiaTensor[2][2] -= Mass * (CenterOfMass.x * CenterOfMass.x + CenterOfMass.y * CenterOfMass.y);
+	IntertiaTensor[0][1] += Mass * CenterOfMass.x * CenterOfMass.y;
+	IntertiaTensor[1][0] += Mass * CenterOfMass.y * CenterOfMass.z;
+	IntertiaTensor[0][2] += Mass * CenterOfMass.z * CenterOfMass.x;
 }
 
 
@@ -121,7 +121,7 @@ void ConvexPolyhedron::SubExpression(float& w0, float& w1, float& w2, float& f1,
 
 	temp0 = w0 + w1;
 	f1 = temp0 + w2;
-	temp1 = w0 + w0;
+	temp1 = w0 * w0;
 	temp2 = temp1 + w1 * temp0;
 	f2 = temp2 + w2 * f1;
 	f3 = w0 * temp1 + w1 * temp2 + w2 * f2;

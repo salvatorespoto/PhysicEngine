@@ -59,10 +59,10 @@ namespace PhysicEngine
 
 	private:
 
-		const float oneDiv6 = 1 / 6;
-		const float oneDiv24 = 1 / 24;
-		const float oneDiv60 = 1 / 60;
-		const float oneDiv120 = 1 / 120;
+		const float oneDiv6 = 1.0f / 6.0f;
+		const float oneDiv24 = 1.0f / 24.0f;
+		const float oneDiv60 = 1.0f / 60.0f;
+		const float oneDiv120 = 1.0f / 120.0f;
 
 		/**
 		 * Helper function used in ComputeCenterOfMassAndIntertiaTensor()
@@ -74,9 +74,9 @@ namespace PhysicEngine
 		std::vector<Vertex> Vertices;
 		std::vector<Face> Faces;
 
-		float mass;
-		glm::vec3 centerOfMass;
-		glm::mat3 intertiaTensor;
+		float Mass;
+		glm::vec3 CenterOfMass;
+		glm::mat3 IntertiaTensor;
 
 		BoundingBox boundingBox;
 	

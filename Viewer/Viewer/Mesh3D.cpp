@@ -173,6 +173,28 @@ void Mesh3D::SetupRender()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)offsetof(Vertex3D, Normal));
 
 	glBindVertexArray(0);
+
+	
+	// Setup center of mass point rendering 
+	centerOfMassVAO.vertices.push_back(Vertex3D { physicConvexHull->CenterOfMass } );
+	centerOfMassVAO.elements.push_back(0);
+
+	glGenVertexArrays(1, &centerOfMassVAO.VaoId);
+	glGenBuffers(1, &centerOfMassVAO.VboId);
+	glGenBuffers(1, &centerOfMassVAO.EboId);
+
+	glBindVertexArray(centerOfMassVAO.VaoId);
+
+	glBindBuffer(GL_ARRAY_BUFFER, centerOfMassVAO.VboId);
+	glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(Vertex3D), &centerOfMassVAO.vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, centerOfMassVAO.EboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 1 * sizeof(unsigned int), &centerOfMassVAO.elements[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+	glBindVertexArray(0);
 }
 
 
@@ -188,21 +210,33 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 	GLuint modelLocation = glGetUniformLocation(shaderProgramId, "model");
 	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(ModelMatrix));
 	
-	// Draw model
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glBindVertexArray(modelVAO.VaoId);
-	glDrawElements(GL_TRIANGLES, modelVAO.elements.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	if (RenderModel)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glBindVertexArray(modelVAO.VaoId);
+		glDrawElements(GL_TRIANGLES, modelVAO.elements.size(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+	}
 
-	// Draw convex hull
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
-	glBindVertexArray(hullVAO.VaoId);
-	glDrawElements(GL_TRIANGLES, hullVAO.elements.size(), GL_UNSIGNED_INT, 0);
-	glDisable(GL_BLEND);
-	glBindVertexArray(0);
+
+	if (RenderConvexHull) 
+	{
+		// Draw center of mass
+		glBindVertexArray(centerOfMassVAO.VaoId);
+		glPointSize(20.0f);
+		glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		// Draw convex hull
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+		glBindVertexArray(hullVAO.VaoId);
+		glDrawElements(GL_TRIANGLES, hullVAO.elements.size(), GL_UNSIGNED_INT, 0);
+		glDisable(GL_BLEND);
+		glBindVertexArray(0);
+	}
 }
 
