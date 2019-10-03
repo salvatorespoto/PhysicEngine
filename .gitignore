@@ -4,7 +4,16 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # External project dependency
-Viewer/Viewer/include/
+Viewer/*
+!Viewer/Viewer/
+
+Viewer/Viewer/*
+!Viewer/Viewer/include/
+
+Viewer/Viewer/include/*
+!Viewer/Viewer/include/PhysicEngine
+
+Viewer/Viewer/include/PhysicEngine/External
 
 # User-specific files
 *.rsuser
