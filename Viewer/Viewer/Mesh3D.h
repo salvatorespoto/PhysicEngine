@@ -41,6 +41,9 @@ class Mesh3D
 
 public:
 
+	/** Show / hide bounding box*/
+	bool RenderBoundingBox = false;
+
 	/** Show / hide convex hull */
 	bool RenderConvexHull = false;
 
@@ -81,9 +84,13 @@ private:
 	/** Rendering data for the hull mesh */
 	VAOAttributes hullVAO;
 
+	/** Rendering data for bounding box */
+	VAOAttributes boundingBoxVAO;
+
 	/** Rendering data for the center of mass */
 	VAOAttributes centerOfMassVAO;
 
+	
 	/** The mesh model transfrom matrix */
 	glm::mat4 ModelMatrix = glm::mat4(1.0f);
 

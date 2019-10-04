@@ -199,10 +199,11 @@ void ViewerApp::HandleKeyboardInput()
 
 	if (glfwGetKey(Window, GLFW_KEY_M) == GLFW_PRESS)
 		RenderModel = !RenderModel;
+	if (glfwGetKey(Window, GLFW_KEY_B) == GLFW_PRESS)
+		RenderBoundingBox = !RenderBoundingBox;
 	if (glfwGetKey(Window, GLFW_KEY_H) == GLFW_PRESS)
-	{
 		RenderConvexHull = !RenderConvexHull;
-	}
+
 	// Handle camera movements
 	if (glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS)
 		CameraFPS.Translate(Camera::FORWARD, 1.0f);
@@ -307,6 +308,7 @@ void ViewerApp::DrawWorld()
 	for (Mesh3D* mesh : MeshList) 
 	{
 		mesh->RenderModel = RenderModel;
+		mesh->RenderBoundingBox = RenderBoundingBox;
 		mesh->RenderConvexHull = RenderConvexHull;
 		mesh->Draw(ShaderProgram);
 	}

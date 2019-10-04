@@ -195,6 +195,33 @@ void Mesh3D::SetupRender()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 
 	glBindVertexArray(0);
+
+
+	// Setup oriented bounding box rendering 
+	physicConvexHull->boundingBox;
+	boundingBoxVAO.vertices.resize(8);
+	std::transform(std::begin(physicConvexHull->boundingBox.vertices), std::end(physicConvexHull->boundingBox.vertices),
+		boundingBoxVAO.vertices.begin(), [](glm::vec3& inV) { Vertex3D v{ inV }; return v; });
+	boundingBoxVAO.elements.resize(24);
+	std::transform(std::begin(physicConvexHull->boundingBox.edges), std::end(physicConvexHull->boundingBox.edges),
+		boundingBoxVAO.elements.begin(), [](unsigned int i) { return i; });
+
+	glGenVertexArrays(1, &boundingBoxVAO.VaoId);
+	glGenBuffers(1, &boundingBoxVAO.VboId);
+	glGenBuffers(1, &boundingBoxVAO.EboId);
+
+	glBindVertexArray(boundingBoxVAO.VaoId);
+
+	glBindBuffer(GL_ARRAY_BUFFER, boundingBoxVAO.VboId);
+	glBufferData(GL_ARRAY_BUFFER, boundingBoxVAO.vertices.size() * sizeof(Vertex3D), &boundingBoxVAO.vertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, boundingBoxVAO.EboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, boundingBoxVAO.elements.size() * sizeof(unsigned int), &boundingBoxVAO.elements[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)0);
+
+	glBindVertexArray(0);
 }
 
 
@@ -220,7 +247,6 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 		glBindVertexArray(0);
 	}
 
-
 	if (RenderConvexHull) 
 	{
 		// Draw center of mass
@@ -235,6 +261,14 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 		glBindVertexArray(hullVAO.VaoId);
 		glDrawElements(GL_TRIANGLES, hullVAO.elements.size(), GL_UNSIGNED_INT, 0);
+		glDisable(GL_BLEND);
+		glBindVertexArray(0);
+	}
+
+	if (RenderBoundingBox)
+	{
+		glBindVertexArray(boundingBoxVAO.VaoId);
+		glDrawElements(GL_LINES, boundingBoxVAO.elements.size(), GL_UNSIGNED_INT, 0);
 		glDisable(GL_BLEND);
 		glBindVertexArray(0);
 	}

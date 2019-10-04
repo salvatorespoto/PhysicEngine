@@ -13,6 +13,8 @@
 
 #include "External/Eigen/Eigenvalues"
 
+
+
 namespace PhysicEngine
 {
 
@@ -21,6 +23,7 @@ namespace PhysicEngine
 		glm::vec3 position;
 		glm::vec3 normal;
 	} RenderVertex;
+
 
 	/** A struct containing information to render a whole physic object */
 	typedef struct {
@@ -47,7 +50,7 @@ namespace PhysicEngine
 	 */
 	typedef struct BoundingBox {
 		glm::vec3 vertices[8];
-		unsigned int edges[32];
+		unsigned int edges[24];
 	} BoundingBox;
 
 
@@ -67,7 +70,8 @@ namespace PhysicEngine
 		/**
 		 * Helper function used in ComputeCenterOfMassAndIntertiaTensor()
 		 */
-		void SubExpression(float& w0, float& w1, float& w2, float& f1, float& f2, float& f3, float& g0, float& g1, float& g2);
+		void ComputeCenterOfMassAndInertiaTensorSubExpression(float& w0, float& w1, float& w2, float& f1, float& f2, float& f3, float& g0, float& g1, float& g2);
+
 
 	public:
 
@@ -78,6 +82,7 @@ namespace PhysicEngine
 		glm::vec3 CenterOfMass;
 		glm::mat3 IntertiaTensor;
 
+		/** Oriented bounding box that contains this polyhedron */
 		BoundingBox boundingBox;
 	
 		/**
@@ -91,16 +96,14 @@ namespace PhysicEngine
 		 */
 		ConvexPolyhedron(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles);
 
-
 		/** Compute the mass, the center of mass and the inertia tensor for the polyhedron */
-		void ComputeCenterOfMassAndIntertiaTensor();
-
+		void ComputeCenterOfMassAndInertiaTensor();
 
 		/** Compute the oriented bounding box */
 		void ComputeOrientedBoundingBox();
 
-		/** */
-		PhysicEngine::RenderPolyhedronData GetRenderPolyhedronData();
+		/** Get data suited for polyhedron rendering */
+		RenderPolyhedronData GetRenderPolyhedronData();
 	};
 }
 

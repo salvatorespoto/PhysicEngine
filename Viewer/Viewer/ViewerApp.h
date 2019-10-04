@@ -64,7 +64,10 @@ private:
 	/** Show / hide object models */
 	bool RenderModel = true;
 
-	/** Show / hide object convex hull*/
+	/** Show / hide object bounding boxes */
+	bool RenderBoundingBox = false;
+
+	/** Show / hide object convex hulls */
 	bool RenderConvexHull = false;
 
 	/** Handle to the current window */

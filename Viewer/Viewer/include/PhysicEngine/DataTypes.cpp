@@ -19,8 +19,8 @@ ConvexPolyhedron::ConvexPolyhedron(std::vector<glm::vec3>& vertices, std::vector
 		Faces.push_back(f);
 	}
 
-	ComputeCenterOfMassAndIntertiaTensor();	
-	//ComputeOrientedBoundingBox();
+	ComputeCenterOfMassAndInertiaTensor();	
+	ComputeOrientedBoundingBox();
 	
 }
 
@@ -45,7 +45,7 @@ PhysicEngine::RenderPolyhedronData ConvexPolyhedron::GetRenderPolyhedronData()
 }
 
 
-void ConvexPolyhedron::ComputeCenterOfMassAndIntertiaTensor() {
+void ConvexPolyhedron::ComputeCenterOfMassAndInertiaTensor() {
 
 	float integral[10] = { 0,0,0,0,0,0,0,0,0,0 };
 
@@ -64,9 +64,9 @@ void ConvexPolyhedron::ComputeCenterOfMassAndIntertiaTensor() {
 
 		float f1x, f2x, f3x, f1y, f2y, f3y, f1z, f2z, f3z, g0x, g1x, g2x, g0y, g1y, g2y, g0z, g1z, g2z;
 
-		SubExpression(v0.x, v1.x, v2.x, f1x, f2x, f3x, g0x, g1x, g2x);
-		SubExpression(v0.y, v1.y, v2.y, f1y, f2y, f3y, g0y, g1y, g2y);
-		SubExpression(v0.z, v1.z, v2.z, f1z, f2z, f3z, g0z, g1z, g2z);
+		ComputeCenterOfMassAndInertiaTensorSubExpression(v0.x, v1.x, v2.x, f1x, f2x, f3x, g0x, g1x, g2x);
+		ComputeCenterOfMassAndInertiaTensorSubExpression(v0.y, v1.y, v2.y, f1y, f2y, f3y, g0y, g1y, g2y);
+		ComputeCenterOfMassAndInertiaTensorSubExpression(v0.z, v1.z, v2.z, f1z, f2z, f3z, g0z, g1z, g2z);
 		
 		integral[0] += d.x * f1x;
 		integral[1] += d.x * f2x;
@@ -115,7 +115,7 @@ void ConvexPolyhedron::ComputeCenterOfMassAndIntertiaTensor() {
 }
 
 
-void ConvexPolyhedron::SubExpression(float& w0, float& w1, float& w2, float& f1, float& f2, float& f3, float& g0, float& g1, float& g2) {
+void ConvexPolyhedron::ComputeCenterOfMassAndInertiaTensorSubExpression(float& w0, float& w1, float& w2, float& f1, float& f2, float& f3, float& g0, float& g1, float& g2) {
 
 	float temp0, temp1, temp2;
 
@@ -131,14 +131,11 @@ void ConvexPolyhedron::SubExpression(float& w0, float& w1, float& w2, float& f1,
 }
 
 
-
 void ConvexPolyhedron::ComputeOrientedBoundingBox() {
-	
 
 	Eigen::Matrix<float, 3, 3> covarianceMatrix;
 	float means[3] = { 0, 0, 0 };
 
-	
 	for (Vertex v : Vertices) {
 		means[0] += v.x,
 		means[1] += v.y,
@@ -168,32 +165,37 @@ void ConvexPolyhedron::ComputeOrientedBoundingBox() {
 	glm::vec3 c2 = { s.eigenvectors().col(2)[0].real(), s.eigenvectors().col(2)[1].real(), s.eigenvectors().col(2)[2].real() };
 
 	// Compute the projection of points over the eigenvectors direction
-	glm::vec3 min = { 0, 0, 0 };
-	glm::vec3 max = { 0, 0, 0 };
+	glm::vec3 min = { 9999, 9999, 9999};
+	glm::vec3 max = { -9999, -9999, -9999};
 	for (Vertex v : Vertices) {
-		min = glm::min(glm::vec3(glm::dot(v, c0), glm::dot(v, c1), glm::dot(v, c2)), min);
-		max = glm::max(glm::vec3(glm::dot(v, c0), glm::dot(v, c1), glm::dot(v, c2)), max);
+		min = glm::min(glm::vec3(glm::dot(c0, v), glm::dot(c1, v), glm::dot(c2, v)), min);
+		max = glm::max(glm::vec3(glm::dot(c0, v), glm::dot(c1, v), glm::dot(c2, v)), max);
 	}
 
 	// Compute the center of the bouding box
 	glm::vec3 center = (min + max) / 2.0f;
 	glm::vec3 extension = (max - min) / 2.0f;
 
+	glm::vec3 b0 = { s.eigenvectors().row(0)[0].real(), s.eigenvectors().row(0)[1].real(), s.eigenvectors().row(0)[2].real() };
+	glm::vec3 b1 = { s.eigenvectors().row(1)[0].real(), s.eigenvectors().row(1)[1].real(), s.eigenvectors().row(1)[2].real() };
+	glm::vec3 b2 = { s.eigenvectors().row(2)[0].real(), s.eigenvectors().row(2)[1].real(), s.eigenvectors().row(2)[2].real() };
+
+	// Trasform center in woold cordinate
+	center = glm::vec3(glm::dot(b0, center), glm::dot(b1, center), glm::dot(b2, center));
+
 	boundingBox = {
 		{   // Bounding box vertices 
-			center + glm::vec3(extension.x, extension.y, extension.z),
-			center + glm::vec3(extension.x, extension.y, -extension.z),
-			center + glm::vec3(-extension.x, extension.y, -extension.z),
-			center + glm::vec3(-extension.x, extension.y, extension.z),
-			center + glm::vec3(extension.x, -extension.y, extension.z),
-			center + glm::vec3(extension.x, -extension.y, -extension.z),
-			center + glm::vec3(-extension.x, -extension.y, -extension.z),
-			center + glm::vec3(-extension.x, -extension.y, extension.z)
+			center - c0 * extension.x - c1 * extension.y - c2 * extension.z,
+			center + c0 * extension.x - c1 * extension.y - c2 * extension.z,
+			center + c0 * extension.x - c1 * extension.y + c2 * extension.z,
+			center - c0 * extension.x - c1 * extension.y + c2 * extension.z,
+			center - c0 * extension.x + c1 * extension.y - c2 * extension.z,
+			center + c0 * extension.x + c1 * extension.y - c2 * extension.z,
+			center + c0 * extension.x + c1 * extension.y + c2 * extension.z,
+			center - c0 * extension.x + c1 * extension.y + c2 * extension.z
 		},
 		{	// Boundign sixteen box edges, each two integer represent an edge
-			1, 2, 2, 3, 3, 4, 4 ,1, 5, 6, 6, 7, 7, 8, 8, 5, 1, 5, 2, 6, 3, 7, 4, 8
+			0, 1, 1, 2, 2, 3, 3 ,0 , 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
 		}
 	};
-
-	int pippo = 1;
 }
