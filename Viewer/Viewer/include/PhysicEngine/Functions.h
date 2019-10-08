@@ -23,6 +23,6 @@ namespace PhysicEngine
 	 * @param The oriented bounding box
 	 * @param The oriented bounding box model trasfromation matrix
 	 */
-	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix);
+	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance);
 }
 #endif

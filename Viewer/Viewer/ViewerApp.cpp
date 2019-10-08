@@ -19,7 +19,8 @@ void ViewerApp::Run()
 	InitUtils();
 	InitGLFW();
 	InitOpenGL();
-	LoadMeshes();
+	SetupScene();
+	//LoadMeshes();
 	RenderLoop();
 	ShutDown();
 }
@@ -168,7 +169,7 @@ void ViewerApp::LoadMeshes()
 	Utils::ListFilesInDirectory(meshDirectoryPath, ".obj", objFilesList);
 	for (std::string objFileName : objFilesList)
 	{
-		MeshList.push_back(new Mesh3D(boost::filesystem::path(meshDirectoryPath).append(objFileName)));
+		MeshMap[objFileName] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append(objFileName));
 	}
 }
 
@@ -256,12 +257,34 @@ void ViewerApp::HandleMouseInput()
 }
 
 
+void ViewerApp::SetupScene() 
+{
+	// Load meshes and put them into the 3D world
+	boost::filesystem::path meshDirectoryPath(CurrentPath);
+	meshDirectoryPath.append(ViewerProperties.get<std::string>("Mesh.Directory"));
+
+	std::vector<std::string> objFilesList;
+	Utils::ListFilesInDirectory(meshDirectoryPath, ".obj", objFilesList);
+	
+	// Load meshes
+	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
+	
+	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+	MeshMap["cube"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(4.0f, 4.0f, 0.0f));
+	
+	MeshMap["cone"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cone.obj"));
+	MeshMap["cone"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(-4.0f, 6.0f, -2.0f));
+
+	MeshMap["uvsphere"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("uvsphere.obj"));
+	MeshMap["uvsphere"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(1.0f, 3.0f, 2.0f));
+
+	// Position camera
+	CameraFPS.SetPosition(glm::vec3(0.0f, 4.0f, 30.0f));
+	TrackBall.Rotate(-200.0f, -120.0f, 0.0f, 1.0f);
+}
+
 void ViewerApp::RenderLoop() 
 {
-
-	//CameraFPS.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
-	//CameraFPS.Rotate(0.0f, 45.0f, 0.0f, 1.0f);
-
 	BOOST_LOG_TRIVIAL(debug) << "Entering mainloop";
 
 	while (!glfwWindowShouldClose(Window)) 
@@ -306,29 +329,50 @@ void ViewerApp::DrawWorld()
 	ProjectionMatrix = glm::perspective (glm::radians(45.0f), (float)ViewportWidth / (float)ViewportHeight, 0.1f, 100.0f);
 	GLuint projectionLocation = glGetUniformLocation(ShaderProgram, "projection");
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
-	 
-	for (Mesh3D* mesh : MeshList) 
+	
+	float minDistance = 100000.0f;
+	Mesh3D* selectedMesh;
+	for(std::pair<std::string, Mesh3D*> p : MeshMap)
 	{
-		if (CheckMouseObjectsIntersection(*mesh))
+		Mesh3D* mesh = p.second;
+		float distance;
+		if (CheckMouseObjectsIntersection(*mesh, distance))
 		{
-			glm::vec3 meshColor(0.0f, 0.0f, 1.0f);
-			glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
-		};
-
-		mesh->RenderModel = RenderModel;
-		mesh->RenderBoundingBox = RenderBoundingBox;
-		mesh->RenderConvexHull = RenderConvexHull;
-		mesh->Draw(ShaderProgram);
+			if (distance < minDistance) 
+			{
+				minDistance = distance;
+				selectedMesh = mesh;
+			}
+		}
 	}
 
-	
 
+	std::for_each(MeshMap.begin(), MeshMap.end(),
+		[this, selectedMesh](std::pair<std::string, Mesh3D*> p)
+		{
+			Mesh3D* mesh = p.second;
+			if(mesh == selectedMesh) 
+			{
+				glm::vec3 meshColor(0.0f, 0.0f, 1.0f);
+				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+			}
+			else 
+			{
+				glm::vec3 meshColor(1.0f, 0.5f, 0.31f);
+				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+			}
+
+			mesh->RenderModel = RenderModel;
+			mesh->RenderBoundingBox = RenderBoundingBox;
+			mesh->RenderConvexHull = RenderConvexHull;
+			mesh->Draw(ShaderProgram);
+		});
 
 	glUseProgram(0);
 }
 
 
-bool ViewerApp::CheckMouseObjectsIntersection(const Mesh3D& mesh) {
+bool ViewerApp::CheckMouseObjectsIntersection(const Mesh3D& mesh, float& outDistance) {
 
 	// The start and end ray positions, in Normalized Device Coordinates (NDC)
 	float rayXNDC = ((float)MouseXCoordinate / (float)ViewportWidth - 0.5f) * 2.0f;
@@ -344,9 +388,9 @@ bool ViewerApp::CheckMouseObjectsIntersection(const Mesh3D& mesh) {
 	glm::vec4 rayEndWorld = InverseProjectionMatrix * rayEndNDC; 
 	rayEndWorld /= rayEndWorld.w;
 	glm::vec3 rayDirectionWorld = glm::normalize(rayEndWorld - rayStartWorld);
-
+	
 	return PhysicEngine::TestRayBoundingBoxIntersection(rayStartWorld, rayDirectionWorld, 
-		mesh.physicConvexHull->boundingBox, mesh.ModelMatrix);
+		mesh.physicConvexHull->boundingBox, mesh.ModelMatrix, outDistance);
 }
 
 

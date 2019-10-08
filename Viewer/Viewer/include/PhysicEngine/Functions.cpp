@@ -2,13 +2,13 @@
 
 	
 
-bool PhysicEngine::TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix)
+bool PhysicEngine::TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance)
 {
 	// Bounding box transform matrix
 	glm::mat4 M = modelMatrix * boundingBox.M;
 
 	// Bounding box center in woorld coordinates
-	glm::vec3 bBoxCenter = (boundingBox.M * glm::vec4(boundingBox.center, 0.0f)).xyz();
+	glm::vec3 bBoxCenter = (M * glm::vec4(boundingBox.center, 1.0f)).xyz();
 
 	glm::vec3 d = bBoxCenter - origin;
 
@@ -86,5 +86,6 @@ bool PhysicEngine::TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 di
 		if (-e - boundingBox.extension.z > 0.0f || -e + boundingBox.extension.z < 0.0f) return false;
 	}
 	
+	outIntersectionDistance = tMin;
 	return true;
 }

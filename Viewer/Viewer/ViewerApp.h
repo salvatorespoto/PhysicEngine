@@ -91,7 +91,7 @@ private:
 	std::map<std::string, Shader*> ShadersMap;
 	
 	/** All loaded meshes */
-	std::list<Mesh3D*> MeshList;
+	std::unordered_map<std::string, Mesh3D*> MeshMap;
 
 	/** Viewer First Person Shooter style camera */
 	Camera CameraFPS;
@@ -132,14 +132,17 @@ private:
 	/** Process window inputs */
 	void ProcessInput();
 
-	/** */
-	bool CheckMouseObjectsIntersection(const Mesh3D& mesh);
+	/** True if the mouse is over a mesh */
+	bool CheckMouseObjectsIntersection(const Mesh3D& mesh, float& outDistance);
 
 	/** Application main rendering loop */
 	void RenderLoop();
 
 	/** Update the camera */
 	void UpdateCamera();
+
+	/** Setup the 3D scene */
+	void SetupScene();
 
 	/** Rendering scene */
 	void DrawWorld();
