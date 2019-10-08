@@ -32,7 +32,7 @@
 #include "Mesh3D.h"
 #include "Camera.h"
 
-
+#include "PhysicEngine/Functions.h"
 
 /** Callback used from GLFW to report errors */
 void glfwErrorCallback(int error, const char* description);
@@ -111,6 +111,9 @@ private:
 	/** Current frame time */
 	int CurrentFrameTime = 0;
 
+	/** The projection matrix */
+	glm::mat4 ProjectionMatrix;
+
 	/** Private constructor, ViewerApp it's a Singleton*/
 	ViewerApp();
 
@@ -128,6 +131,9 @@ private:
 
 	/** Process window inputs */
 	void ProcessInput();
+
+	/** */
+	bool CheckMouseObjectsIntersection(const Mesh3D& mesh);
 
 	/** Application main rendering loop */
 	void RenderLoop();

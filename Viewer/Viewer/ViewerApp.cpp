@@ -266,8 +266,9 @@ void ViewerApp::RenderLoop()
 
 	while (!glfwWindowShouldClose(Window)) 
 	{
+		glfwGetFramebufferSize(Window, &ViewportWidth, &ViewportHeight);
 		ProcessInput();
-		UpdateCamera();
+		//UpdateCamera(); 
 		DrawWorld();
 		glfwSwapBuffers(Window);
 		glfwPollEvents();
@@ -301,19 +302,51 @@ void ViewerApp::DrawWorld()
 	glm::mat4 viewTrackball = TrackBall.GetViewMatrix();
 	glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view * viewTrackball));
 	
-	glm::mat4 projection = glm::perspective (glm::radians(90.0f), (float)ViewportWidth / (float)ViewportHeight, 0.1f, 100.0f);
+	// Setup Projection matrix
+	ProjectionMatrix = glm::perspective (glm::radians(45.0f), (float)ViewportWidth / (float)ViewportHeight, 0.1f, 100.0f);
 	GLuint projectionLocation = glGetUniformLocation(ShaderProgram, "projection");
-	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr (projection));
+	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
 	 
 	for (Mesh3D* mesh : MeshList) 
 	{
+		if (CheckMouseObjectsIntersection(*mesh))
+		{
+			glm::vec3 meshColor(0.0f, 0.0f, 1.0f);
+			glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+		};
+
 		mesh->RenderModel = RenderModel;
 		mesh->RenderBoundingBox = RenderBoundingBox;
 		mesh->RenderConvexHull = RenderConvexHull;
 		mesh->Draw(ShaderProgram);
 	}
 
+	
+
+
 	glUseProgram(0);
+}
+
+
+bool ViewerApp::CheckMouseObjectsIntersection(const Mesh3D& mesh) {
+
+	// The start and end ray positions, in Normalized Device Coordinates (NDC)
+	float rayXNDC = ((float)MouseXCoordinate / (float)ViewportWidth - 0.5f) * 2.0f;
+	float rayYNDC = ((float)MouseYCoordinate / (float)ViewportHeight - 0.5f) * 2.0f;
+	glm::vec4 rayStartNDC(rayXNDC , -rayYNDC, -1.0, 1.0f);
+	glm::vec4 rayEndNDC(rayXNDC, -rayYNDC, 0.0, 1.0f);
+
+	// Get the inverse transofrmation from NDC -> camera space -> wold space
+	// So inverse(ProjectionMatrix) goes from NDC to Camera Space.
+	glm::mat4 InverseProjectionMatrix = glm::inverse(ProjectionMatrix * CameraFPS.GetViewMatrix() * TrackBall.GetViewMatrix());
+	glm::vec4 rayStartWorld = InverseProjectionMatrix * rayStartNDC; 
+	rayStartWorld /= rayStartWorld.w;
+	glm::vec4 rayEndWorld = InverseProjectionMatrix * rayEndNDC; 
+	rayEndWorld /= rayEndWorld.w;
+	glm::vec3 rayDirectionWorld = glm::normalize(rayEndWorld - rayStartWorld);
+
+	return PhysicEngine::TestRayBoundingBoxIntersection(rayStartWorld, rayDirectionWorld, 
+		mesh.physicConvexHull->boundingBox, mesh.ModelMatrix);
 }
 
 
