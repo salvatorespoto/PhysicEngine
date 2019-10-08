@@ -1,5 +1,7 @@
 #include "DataTypes.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 using namespace PhysicEngine;
 
 
@@ -142,19 +144,20 @@ void ConvexPolyhedron::ComputeOrientedBoundingBox() {
 		means[2] += v.z;
 	}
 
-	means[0] /= Vertices.size(); 
-	means[1] /= Vertices.size(); 
+	means[0] /= Vertices.size();
+	means[1] /= Vertices.size();
 	means[2] /= Vertices.size();
 
 	// Fill the covariance matrix
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 
-			covarianceMatrix(i,j) = 0.0;
+			covarianceMatrix(i, j) = 0.0;
 			for (Vertex v : Vertices) {
-				covarianceMatrix(i,j) += (means[i] - v[i]) * (means[j] - v[j]);
+				covarianceMatrix(i, j) += (means[i] - v[i]) * (means[j] - v[j]);
 			}
-			covarianceMatrix(i,j) /= Vertices.size() - 1;
+
+			covarianceMatrix(i, j) /= Vertices.size() - 1;
 		}
 	}
 
@@ -165,26 +168,38 @@ void ConvexPolyhedron::ComputeOrientedBoundingBox() {
 	glm::vec3 c2 = { s.eigenvectors().col(2)[0].real(), s.eigenvectors().col(2)[1].real(), s.eigenvectors().col(2)[2].real() };
 
 	// Compute the projection of points over the eigenvectors direction
-	glm::vec3 min = { 9999, 9999, 9999};
-	glm::vec3 max = { -9999, -9999, -9999};
+	glm::vec3 min = { 9999, 9999, 9999 };
+	glm::vec3 max = { -9999, -9999, -9999 };
 	for (Vertex v : Vertices) {
 		min = glm::min(glm::vec3(glm::dot(c0, v), glm::dot(c1, v), glm::dot(c2, v)), min);
 		max = glm::max(glm::vec3(glm::dot(c0, v), glm::dot(c1, v), glm::dot(c2, v)), max);
 	}
 
-	// Compute the center of the bouding box
+	// Center of the bouding box
 	glm::vec3 center = (min + max) / 2.0f;
+	
+	// Half of a side 
 	glm::vec3 extension = (max - min) / 2.0f;
 
+	// Trasform center to woold coordinates
 	glm::vec3 b0 = { s.eigenvectors().row(0)[0].real(), s.eigenvectors().row(0)[1].real(), s.eigenvectors().row(0)[2].real() };
 	glm::vec3 b1 = { s.eigenvectors().row(1)[0].real(), s.eigenvectors().row(1)[1].real(), s.eigenvectors().row(1)[2].real() };
 	glm::vec3 b2 = { s.eigenvectors().row(2)[0].real(), s.eigenvectors().row(2)[1].real(), s.eigenvectors().row(2)[2].real() };
-
-	// Trasform center in woold cordinate
 	center = glm::vec3(glm::dot(b0, center), glm::dot(b1, center), glm::dot(b2, center));
 
+	// Save the transformation matrix
+	glm::mat4 M = {
+		s.eigenvectors().row(0)[0].real(), s.eigenvectors().row(1)[0].real(), s.eigenvectors().row(2)[0].real(), 0,
+		s.eigenvectors().row(0)[1].real(), s.eigenvectors().row(1)[1].real(), s.eigenvectors().row(2)[1].real(), 0,
+		s.eigenvectors().row(0)[2].real(), s.eigenvectors().row(1)[2].real(), s.eigenvectors().row(2)[2].real(), 0,
+		center[0], center[1], center[2], 1
+	};
+
 	boundingBox = {
-		{   // Bounding box vertices 
+		{(min + max) / 2.0f},	// Untrasformed center
+		{extension},			// Half of the extension of a side of the bounding box
+		{ M },					// Bounding box transformation matrix
+		{   // Bounding box trasformed vertices 
 			center - c0 * extension.x - c1 * extension.y - c2 * extension.z,
 			center + c0 * extension.x - c1 * extension.y - c2 * extension.z,
 			center + c0 * extension.x - c1 * extension.y + c2 * extension.z,
@@ -198,4 +213,5 @@ void ConvexPolyhedron::ComputeOrientedBoundingBox() {
 			0, 1, 1, 2, 2, 3, 3 ,0 , 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7
 		}
 	};
+
 }

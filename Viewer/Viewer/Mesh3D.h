@@ -50,6 +50,12 @@ public:
 	/** Show / hide model */
 	bool RenderModel = true;
 
+	/** The mesh model transfrom matrix */
+	glm::mat4 ModelMatrix = glm::mat4(1.0f);
+
+	/** Convex hull used from the physic engine */
+	PhysicEngine::ConvexPolyhedron* physicConvexHull;
+
 	/** Load mesh Exception */
 	struct LoadMeshException : public std::exception
 	{
@@ -89,13 +95,6 @@ private:
 
 	/** Rendering data for the center of mass */
 	VAOAttributes centerOfMassVAO;
-
-	
-	/** The mesh model transfrom matrix */
-	glm::mat4 ModelMatrix = glm::mat4(1.0f);
-
-	/** Convex hull used from the physic engine */
-	PhysicEngine::ConvexPolyhedron* physicConvexHull;
 
 	/** Setup mesh for rendering */
 	void SetupRender();

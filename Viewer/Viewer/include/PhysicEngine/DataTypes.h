@@ -1,5 +1,5 @@
 #ifndef DATA_TYPES_H
-#define DATA_TYPES_h
+#define DATA_TYPES_H
 
 #include <vector>
 
@@ -45,18 +45,17 @@ namespace PhysicEngine
 	} Face;
 
 
-	/**
-	 * A 3d bounding box. Faces are quads.
-	 */
+	/** A 3d bounding box. Faces are quads */
 	typedef struct BoundingBox {
-		glm::vec3 vertices[8];
-		unsigned int edges[24];
+		glm::vec3 center;			// Untrasformed center
+		glm::vec3 extension;		// Half a side 
+		glm::mat4 M;				// Transformation matrix
+		glm::vec3 vertices[8];		// Trasformed vertices of the bounding box 
+		unsigned int edges[24];		// Index list of the edges of the bounding box
 	} BoundingBox;
 
 
-	/**
-	 * A Convex 3D object
-	 */
+	/** A Convex 3D object */
 	class ConvexPolyhedron
 	{
 
