@@ -241,7 +241,8 @@ void ViewerApp::HandleMouseInput()
 	MouseXCoordinate = xCoordinate;
 	MouseYCoordinate = yCoordinate;
 
-	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) 
+	{
 		
 		// Left mouse click is the First Person Shooter camera
 		// yaw and pitch are counterclockwise movement of the camera around Y ans X axis 
@@ -249,10 +250,30 @@ void ViewerApp::HandleMouseInput()
 		// a rotation to the right (clockwise). The same for pitch.
 		CameraFPS.Rotate(-xOffset, -yOffset, 0.0f, 1.0f);
 	}
-	else if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
-		
+	else if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) 
+	{
 		// Right mouse button rotate the trackball 
 		TrackBall.Rotate(-xOffset, -yOffset, 0.0f, 1.0f);
+	}
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) 
+	{
+		draggingMesh = true;
+	}
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_3) == GLFW_RELEASE)
+	{
+		draggingMesh = false;
+	}
+	
+	if(draggingMesh) 
+	{
+		// Get the arriving point of the mouse onto the 
+		if (SelectedMesh != nullptr) 
+		{
+			// Traslate the mesh on the perpendi plane to the camera front vector
+			glm::vec3 traslation = (TrackBall.UpVector * (float)(-yOffset / 50.0f)) + (TrackBall.RightVector * (float)(xOffset / 50.0f));
+			SelectedMesh->ModelMatrix 
+				= glm::translate(SelectedMesh->ModelMatrix, traslation);
+		}
 	}
 }
 
@@ -290,8 +311,7 @@ void ViewerApp::RenderLoop()
 	while (!glfwWindowShouldClose(Window)) 
 	{
 		glfwGetFramebufferSize(Window, &ViewportWidth, &ViewportHeight);
-		ProcessInput();
-		//UpdateCamera(); 
+		ProcessInput();; 
 		DrawWorld();
 		glfwSwapBuffers(Window);
 		glfwPollEvents();
@@ -331,29 +351,31 @@ void ViewerApp::DrawWorld()
 	glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(ProjectionMatrix));
 	
 	float minDistance = 100000.0f;
-	Mesh3D* selectedMesh;
-	for(std::pair<std::string, Mesh3D*> p : MeshMap)
+	if (!draggingMesh)
 	{
-		Mesh3D* mesh = p.second;
-		float distance;
-		if (CheckMouseObjectsIntersection(*mesh, distance))
+		SelectedMesh = nullptr;
+		for(std::pair<std::string, Mesh3D*> p : MeshMap)
 		{
-			if (distance < minDistance) 
+			Mesh3D* mesh = p.second;
+			float distance;
+			if (CheckMouseObjectsIntersection(*mesh, distance))
 			{
-				minDistance = distance;
-				selectedMesh = mesh;
+				if (distance < minDistance) 
+				{
+					minDistance = distance;
+					SelectedMesh = mesh;
+				}
 			}
 		}
 	}
 
-
 	std::for_each(MeshMap.begin(), MeshMap.end(),
-		[this, selectedMesh](std::pair<std::string, Mesh3D*> p)
+		[this](std::pair<std::string, Mesh3D*> p)
 		{
 			Mesh3D* mesh = p.second;
-			if(mesh == selectedMesh) 
+			if(mesh == SelectedMesh) 
 			{
-				glm::vec3 meshColor(0.0f, 0.0f, 1.0f);
+				glm::vec3 meshColor(0.31f, 0.5f, 1.0f);
 				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 			}
 			else 

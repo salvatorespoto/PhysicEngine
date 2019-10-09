@@ -93,6 +93,12 @@ private:
 	/** All loaded meshes */
 	std::unordered_map<std::string, Mesh3D*> MeshMap;
 
+	/** A pointer to the selected mesh */
+	Mesh3D* SelectedMesh;
+
+	/** Currently dragging a mesh */
+	bool draggingMesh = false;
+
 	/** Viewer First Person Shooter style camera */
 	Camera CameraFPS;
 

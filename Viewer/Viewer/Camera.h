@@ -33,6 +33,15 @@ public:
 		DOWN
 	};
 
+	/** The camera looking direction. The forward vector actually will points "backward" in camera space */
+	glm::vec3 ForwardVector;
+
+	/** The camera up direction */
+	glm::vec3 UpVector;
+
+	/** The camera right */
+	glm::vec3 RightVector;
+
 	/** The field of view angle in degree */
 	float FieldOfViewValue = 45.0f;
 
@@ -78,14 +87,7 @@ private:
 	/** Current camera position */
 	glm::vec3 PositionVector;
 	
-	/** The camera looking direction. The forward vector actually will points "backward" in camera space */
-	glm::vec3 ForwardVector;
 	
-	/** The camera up direction */
-	glm::vec3 UpVector;
-	
-	/** The camera right */
-	glm::vec3 RightVector;
 	
 	/** The camera tralation */
 	glm::mat4 TranslationMatrix = glm::mat4(1.0f);
