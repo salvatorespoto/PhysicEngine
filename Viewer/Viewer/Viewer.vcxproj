@@ -166,6 +166,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="include\PhysicEngine\Engine.cpp" />
     <ClCompile Include="include\PhysicEngine\DataTypes.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="include\PhysicEngine\Functions.cpp" />
@@ -177,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="include\PhysicEngine\Engine.h" />
     <ClInclude Include="include\PhysicEngine\Functions.h" />
     <ClInclude Include="include\PhysicEngine\DataTypes.h" />
     <ClInclude Include="include\tini_obj_loader.h" />

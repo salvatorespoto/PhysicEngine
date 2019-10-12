@@ -81,6 +81,11 @@ namespace PhysicEngine
 		glm::vec3 CenterOfMass;
 		glm::mat3 IntertiaTensor;
 
+		bool IsColliding = false;
+		
+		/** Model transformation matrix */
+		glm::mat4* ModelMatrix;
+
 		/** Oriented bounding box that contains this polyhedron */
 		BoundingBox boundingBox;
 	

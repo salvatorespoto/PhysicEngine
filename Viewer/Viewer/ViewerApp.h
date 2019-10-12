@@ -32,7 +32,11 @@
 #include "Mesh3D.h"
 #include "Camera.h"
 
+#include "PhysicEngine/Engine.h"
+#include "PhysicEngine/DataTypes.h"
 #include "PhysicEngine/Functions.h"
+
+
 
 /** Callback used from GLFW to report errors */
 void glfwErrorCallback(int error, const char* description);
@@ -119,6 +123,10 @@ private:
 
 	/** The projection matrix */
 	glm::mat4 ProjectionMatrix;
+
+
+	/** The physic engine */
+	PhysicEngine::Engine physicEngine;
 
 	/** Private constructor, ViewerApp it's a Singleton*/
 	ViewerApp();

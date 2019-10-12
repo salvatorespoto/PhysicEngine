@@ -24,5 +24,24 @@ namespace PhysicEngine
 	 * @param The oriented bounding box model trasfromation matrix
 	 */
 	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance);
+
+	/**
+	 * Test intersection between a two convex polyhedron
+	 *
+	 * @param p0 the first polyhedron
+	 * @param p1 the second polyhedron
+	 */
+	bool TestPolyHedronIntersect(const PhysicEngine::ConvexPolyhedron& p0, const PhysicEngine::ConvexPolyhedron& p1);
+
+	/** 
+	 * Compute the interval of a convex polyhedron projection onto a specifi axis
+	 *
+	 * @param c0 the convex polyhedron
+	 * @param d the direction onto compute the projection
+	 * @param outMin the output minimum value projection
+	 * @param outMax the output minimum value projection
+	 */
+	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, double& outMin, double& outMax);
+
 }
 #endif

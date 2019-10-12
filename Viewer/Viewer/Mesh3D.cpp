@@ -47,6 +47,9 @@ void Mesh3D::LoadFromObjFile(const boost::filesystem::path& objFilePath)
 
 	// Load the "Convex hull"
 	LoadConvexHull(shapes[hullShapeId].mesh, attrib);
+
+	// The convex hull model matrix is a reference the the mesh model matrix
+	physicConvexHull->ModelMatrix = &ModelMatrix;
 }
 
 

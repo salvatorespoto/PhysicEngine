@@ -42,6 +42,9 @@
     <ClCompile Include="include\PhysicEngine\Functions.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="include\PhysicEngine\Engine.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ViewerApp.h">
@@ -72,6 +75,9 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\PhysicEngine\Functions.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\Engine.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

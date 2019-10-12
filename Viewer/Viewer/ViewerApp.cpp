@@ -241,7 +241,7 @@ void ViewerApp::HandleMouseInput()
 	MouseXCoordinate = xCoordinate;
 	MouseYCoordinate = yCoordinate;
 
-	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) 
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) 
 	{
 		
 		// Left mouse click is the First Person Shooter camera
@@ -255,11 +255,11 @@ void ViewerApp::HandleMouseInput()
 		// Right mouse button rotate the trackball 
 		TrackBall.Rotate(-xOffset, -yOffset, 0.0f, 1.0f);
 	}
-	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_3) == GLFW_PRESS) 
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) 
 	{
 		draggingMesh = true;
 	}
-	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_3) == GLFW_RELEASE)
+	if (glfwGetMouseButton(Window, GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE)
 	{
 		draggingMesh = false;
 	}
@@ -296,8 +296,12 @@ void ViewerApp::SetupScene()
 	MeshMap["cone"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cone.obj"));
 	MeshMap["cone"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(-4.0f, 6.0f, -2.0f));
 
-	MeshMap["uvsphere"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("uvsphere.obj"));
-	MeshMap["uvsphere"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(1.0f, 3.0f, 2.0f));
+
+	// Add all object to physic engine
+	for (std::pair<std::string, Mesh3D*> p : MeshMap)
+	{
+		physicEngine.AddConvexPolyhedron(p.second->physicConvexHull);
+	}
 
 	// Position camera
 	CameraFPS.SetPosition(glm::vec3(0.0f, 4.0f, 30.0f));
@@ -311,7 +315,8 @@ void ViewerApp::RenderLoop()
 	while (!glfwWindowShouldClose(Window)) 
 	{
 		glfwGetFramebufferSize(Window, &ViewportWidth, &ViewportHeight);
-		ProcessInput();; 
+		ProcessInput();
+		physicEngine.Tick();
 		DrawWorld();
 		glfwSwapBuffers(Window);
 		glfwPollEvents();
@@ -384,6 +389,15 @@ void ViewerApp::DrawWorld()
 				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 			}
 
+			// Colliding mesh
+			if (mesh->physicConvexHull->IsColliding)
+			{
+				glm::vec3 meshColor(1.0f, 0.0f, 0.0f);
+				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+			}
+			
+			
+			
 			mesh->RenderModel = RenderModel;
 			mesh->RenderBoundingBox = RenderBoundingBox;
 			mesh->RenderConvexHull = RenderConvexHull;
