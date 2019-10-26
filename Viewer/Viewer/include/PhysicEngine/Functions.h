@@ -9,11 +9,26 @@
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/epsilon.hpp>
 
 #include "DataTypes.h"
 
 namespace PhysicEngine
 {
+
+	const float EPSILON_ZERO = 0.001f;
+
+	/**
+	 * Compares two floating values
+	 *
+	 * @param f0 
+	 * @param f1
+	 */
+	bool Equal(float f0, float f1);
+
+	bool GreaterThan(float f0, float f1);
+
+	bool LessThan(float f0, float f1);
 
 	/**
 	 * Test intersection between a ray and an oriented bounding box 
@@ -35,6 +50,10 @@ namespace PhysicEngine
 
 	/** 
 	 * Compute the interval of a convex polyhedron projection onto a specifi axis
+	 * This function could be used to test if two polyhedron intersect along an axis in the following way:
+	 *		ComputePolyhedronProjectionOnAxis(polyhedron0, axis, min0, max0);
+	 *		ComputePolyhedronProjectionOnAxis(polyhedron0, axis, min1, max1);
+	 *		if (max0 < min1 || max1 < min0) return false; // the two polyhedron do not intersect on the axis
 	 *
 	 * @param c0 the convex polyhedron
 	 * @param d the direction onto compute the projection
@@ -42,6 +61,29 @@ namespace PhysicEngine
 	 * @param outMax the output minimum value projection
 	 */
 	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, double& outMin, double& outMax);
+
+
+	/**
+	 * Compute the interval of a convex polyhedron projection onto a specifi axis
+	 *
+	 * @param c0 the convex polyhedron
+	 * @param d the direction onto compute the projection
+	 * @param 
+	 * @param 
+	 */
+	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, PhysicEngine::ProjectionInfo& outProjectionInfo);
+
+
+	/**
+	 * Compute the interval of a convex polyhedron projection onto a specifi axis
+	 *
+	 * @param c0 the convex polyhedron
+	 * @param d the direction onto compute the projection
+	 * @param
+	 * @param
+	 */
+	bool NoIntersect(double tMax, const float& speed, ProjectionInfo& projectionInfo0, ProjectionInfo& projectionInfo1,
+		ProjectionInfo& pCurr0, ProjectionInfo& pCurr1, int& side, double& tFirst, double& tLast);
 
 }
 #endif

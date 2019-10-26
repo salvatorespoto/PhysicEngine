@@ -293,8 +293,8 @@ void ViewerApp::SetupScene()
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(4.0f, 4.0f, 0.0f));
 	
-	MeshMap["cone"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cone.obj"));
-	MeshMap["cone"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(-4.0f, 6.0f, -2.0f));
+	//MeshMap["cone"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cone.obj"));
+	//MeshMap["cone"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(-4.0f, 6.0f, -2.0f));
 
 
 	// Add all object to physic engine
