@@ -147,7 +147,7 @@ private:
 	void ProcessInput();
 
 	/** True if the mouse is over a mesh */
-	bool CheckMouseObjectsIntersection(const Mesh3D& mesh, float& outDistance);
+	bool CheckMouseObjectsIntersection(Mesh3D& mesh, float& outDistance);
 
 	/** Application main rendering loop */
 	void RenderLoop();

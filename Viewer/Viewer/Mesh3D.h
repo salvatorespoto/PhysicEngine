@@ -50,8 +50,14 @@ public:
 	/** Show / hide model */
 	bool RenderModel = true;
 
-	/** The mesh model transfrom matrix */
-	glm::mat4 ModelMatrix = glm::mat4(1.0f);
+	/** The mesh model transfrom matrices */
+
+	glm::mat4 ScaleMatrix = glm::mat4(1.0f);
+
+	glm::mat4 RotationMatrix = glm::mat4(1.0f);
+	
+	glm::mat4 TranslationMatrix = glm::mat4(1.0f);
+
 
 	/** Convex hull used from the physic engine */
 	PhysicEngine::ConvexPolyhedron* physicConvexHull;

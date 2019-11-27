@@ -38,13 +38,31 @@ namespace PhysicEngine
 	/** 3d object edge (edge's indexes in the vertex array) */
 	typedef glm::ivec2 Edge;
 
-	
-	/** A 3d object triangular face */
+	/** A contact point */
 	typedef struct {
 		glm::ivec3 vId;
 		glm::vec3 n;
 	} Face;
 
+	/** 
+	 * A contact between two objects. 
+	 * All the contact that could occur between two objects are resolved to two types of contact:
+	 *	VERTEX_FACE_CONTACT and EDGE_EDGE_CONTACT.
+	 */
+	typedef struct Contact {
+		enum Type { VERTEX_FACE_CONTACT = 0, EDGE_EDGE_CONTACT };	// Type of contact 
+		Type type;				// Type of contact
+		//ConvexPolyhedron C0;	// Body containing vertex
+		//ConvexPolyhedron C1;	// Body containing face
+		glm::vec3 Point;		// Contact point
+		glm::vec3 Normal;		// Outward versor normal to the face 
+		glm::vec3 EdgeC0;		// The direction of the edge from C0 object
+		glm::vec3 EdgeC1;		// The direction of the edge from C1 object
+		glm::vec3 E00;		
+		glm::vec3 E01;
+		glm::vec3 E10;
+		glm::vec3 E11;
+	} Contact;
 
 	/** A 3d bounding box. Faces are quads */
 	typedef struct BoundingBox {
@@ -59,11 +77,22 @@ namespace PhysicEngine
 	/* The contact set could be a vector, one or more edges or one or more faces */
 	typedef struct ContactSet {
 		enum Type { VERTEX = 1, EDGE, FACE };	// Type of contact set
-		Type type;								// Type of the contact set
-		int vertex;								// If the type is VERTEX, its index will be stored here
+		Type type;								
+		std::vector<int> vertices;				// If the type is VERTEX, the edges list will be stored here
 		std::vector<Edge> edges;				// If the type is EDGE, the edges list will be stored here
 		std::vector<Face> faces;				// If the type is FACE, the edges list will be stored here
 	} ContactSet;	
+
+
+	/* The contact set could be a vector, one or more edges or one or more faces */
+	typedef struct Object3D {
+		enum Type { EMPTY = 0, VERTEX, EDGE, FACE };	// Type of polygon
+		Type type;								
+		std::vector<Vertex> vertices;			// If the type is VERTEX, the edges list will be stored here
+		std::vector<Edge> edges;				// If the type is EDGE, the edges list will be stored here
+		std::vector<Face> faces;				// If the type is FACE, the edges list will be stored here
+	} Object3D;
+
 
 	/** The contact set between two convex polyhedrons */
 	typedef struct {
@@ -99,9 +128,9 @@ namespace PhysicEngine
 		glm::vec3 Velocity;
 
 		bool IsColliding = false;
-		
+
 		/** Model transformation matrix */
-		glm::mat4* ModelMatrix;
+		glm::mat4 ModelMatrix;
 
 		/** Oriented bounding box that contains this polyhedron */
 		BoundingBox boundingBox;

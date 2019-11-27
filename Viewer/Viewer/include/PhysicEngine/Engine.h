@@ -12,14 +12,14 @@ namespace PhysicEngine
 {
 	class Engine
 	{
-	private:
-		std::vector<ConvexPolyhedron*> Objects;
-
 	public:
 		
+		std::vector<ConvexPolyhedron*> Objects;
+		std::vector<Contact> Contacts;
+
 		void Tick()
 		{
-			TestCollisions();
+			DetectCollisions();
 		}
 
 		void AddConvexPolyhedron(ConvexPolyhedron* c)
@@ -27,17 +27,18 @@ namespace PhysicEngine
 			Objects.push_back(c);
 		}
 
-		void TestCollisions() 
+		void DetectCollisions()
 		{
-			for(ConvexPolyhedron* c : Objects) 
-				c->IsColliding = false;
-			
+			Contacts.clear();
+			for (ConvexPolyhedron* c : Objects) c->IsColliding = false;
+
 			for	(ConvexPolyhedron* c0 : Objects) 
 			{
 				for (ConvexPolyhedron* c1 : Objects)
 				{
 					if (c0 == c1) break;
-					if (TestPolyHedronIntersect(*c0, *c1)) 
+
+					if (TestPolyHedronIntersect(*c0, *c1, Contacts)) 
 					{
 						c0->IsColliding = true;
 						c1->IsColliding = true;

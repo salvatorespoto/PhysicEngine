@@ -16,7 +16,7 @@
 namespace PhysicEngine
 {
 
-	const float EPSILON_ZERO = 0.001f;
+	const float EPSILON_ZERO = 0.00001f;
 
 	/**
 	 * Compares two floating values
@@ -46,7 +46,7 @@ namespace PhysicEngine
 	 * @param p0 the first polyhedron
 	 * @param p1 the second polyhedron
 	 */
-	bool TestPolyHedronIntersect(const PhysicEngine::ConvexPolyhedron& p0, const PhysicEngine::ConvexPolyhedron& p1);
+	bool TestPolyHedronIntersect(const PhysicEngine::ConvexPolyhedron& p0, const PhysicEngine::ConvexPolyhedron& p1, std::vector<Contact>& outContacts);
 
 	/** 
 	 * Compute the interval of a convex polyhedron projection onto a specifi axis
@@ -85,5 +85,20 @@ namespace PhysicEngine
 	bool NoIntersect(double tMax, const float& speed, ProjectionInfo& projectionInfo0, ProjectionInfo& projectionInfo1,
 		ProjectionInfo& pCurr0, ProjectionInfo& pCurr1, int& side, double& tFirst, double& tLast);
 
+
+	/**
+	 * Compute the intersection set of two polyhedra that are in contact
+	 *
+	 * @param c0 the first convex polyhedron
+	 * @param c0 the first convex polyhedron* @param
+	 */
+	void GetIntersection(const ConvexPolyhedron& c0, const ConvexPolyhedron& c1,
+		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts);
+	
+	bool GetEdgeEdgeIntersection(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1, Object3D& outIntersection);
+
+	void GetEdgeFacesIntersection(const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges, std::vector<Contact>& outContacts);
+
+	void GetCoplanarFaceFaceIntersection(std::vector<Object3D> f0, std::vector<Object3D> f1, std::vector<Contact>& outContacts);
 }
 #endif

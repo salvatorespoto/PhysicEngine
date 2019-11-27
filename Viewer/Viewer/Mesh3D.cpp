@@ -49,7 +49,7 @@ void Mesh3D::LoadFromObjFile(const boost::filesystem::path& objFilePath)
 	LoadConvexHull(shapes[hullShapeId].mesh, attrib);
 
 	// The convex hull model matrix is a reference the the mesh model matrix
-	physicConvexHull->ModelMatrix = &ModelMatrix;
+	physicConvexHull->ModelMatrix = glm::mat4(GetModelMatrix());
 }
 
 
@@ -230,7 +230,7 @@ void Mesh3D::SetupRender()
 
 glm::mat4 Mesh3D::GetModelMatrix()
 {
-	return ModelMatrix;
+	return TranslationMatrix * RotationMatrix * ScaleMatrix;
 }
 
 
@@ -238,7 +238,7 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 {
 	// Set up model transform
 	GLuint modelLocation = glGetUniformLocation(shaderProgramId, "model");
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(ModelMatrix));
+	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(GetModelMatrix()));
 	
 	if (RenderModel)
 	{

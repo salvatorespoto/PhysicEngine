@@ -198,11 +198,11 @@ void ViewerApp::HandleKeyboardInput()
 	if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(Window, true);
 
-	if (glfwGetKey(Window, GLFW_KEY_M) == GLFW_PRESS)
+	if (glfwGetKey(Window, GLFW_KEY_1) == GLFW_PRESS)
 		RenderModel = !RenderModel;
-	if (glfwGetKey(Window, GLFW_KEY_B) == GLFW_PRESS)
+	if (glfwGetKey(Window, GLFW_KEY_2) == GLFW_PRESS)
 		RenderBoundingBox = !RenderBoundingBox;
-	if (glfwGetKey(Window, GLFW_KEY_H) == GLFW_PRESS)
+	if (glfwGetKey(Window, GLFW_KEY_3) == GLFW_PRESS)
 		RenderConvexHull = !RenderConvexHull;
 
 	// Handle camera movements
@@ -218,6 +218,26 @@ void ViewerApp::HandleKeyboardInput()
 		CameraFPS.Translate(Camera::UP, 1.0f);
 	if (glfwGetKey(Window, GLFW_KEY_F) == GLFW_PRESS)
 		CameraFPS.Translate(Camera::DOWN, 1.0f);
+
+	// Handle selected object rotation
+	if(draggingMesh) 
+	{
+		if (SelectedMesh != nullptr)
+		{
+			if (glfwGetKey(Window, GLFW_KEY_I) == GLFW_PRESS)
+				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, 0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+			if (glfwGetKey(Window, GLFW_KEY_K) == GLFW_PRESS)
+				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, -0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+			if (glfwGetKey(Window, GLFW_KEY_J) == GLFW_PRESS)
+				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+			if (glfwGetKey(Window, GLFW_KEY_L) == GLFW_PRESS)
+				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, -0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+			if (glfwGetKey(Window, GLFW_KEY_U) == GLFW_PRESS)
+				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, 0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
+			if (glfwGetKey(Window, GLFW_KEY_O) == GLFW_PRESS)
+				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, -0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
+		}	
+	}
 }
 
 
@@ -270,9 +290,8 @@ void ViewerApp::HandleMouseInput()
 		if (SelectedMesh != nullptr) 
 		{
 			// Traslate the mesh on the perpendi plane to the camera front vector
-			glm::vec3 traslation = (TrackBall.UpVector * (float)(-yOffset / 50.0f)) + (TrackBall.RightVector * (float)(xOffset / 50.0f));
-			SelectedMesh->ModelMatrix 
-				= glm::translate(SelectedMesh->ModelMatrix, traslation);
+			glm::vec3 traslation = (TrackBall.UpVector * (float)(-yOffset / 5.0f)) + (TrackBall.RightVector * (float)(xOffset / 5.0f));
+			SelectedMesh->TranslationMatrix = glm::translate(SelectedMesh->TranslationMatrix, traslation);
 		}
 	}
 }
@@ -289,13 +308,23 @@ void ViewerApp::SetupScene()
 	
 	// Load meshes
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
+	MeshMap["floor"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	
+	MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
+	MeshMap["tetra"]->TranslationMatrix = glm::translate(MeshMap["tetra"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
+	MeshMap["tetra"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.3f, 0.0f);
+	/*
 	
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
-	MeshMap["cube"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(4.0f, 4.0f, 0.0f));
+	MeshMap["cube"]->TranslationMatrix = glm::translate(MeshMap["cube"]->TranslationMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
+	MeshMap["cube"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 	
-	//MeshMap["cone"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cone.obj"));
-	//MeshMap["cone"]->ModelMatrix = glm::translate(MeshMap["cube"]->ModelMatrix, glm::vec3(-4.0f, 6.0f, -2.0f));
-
+	MeshMap["cube2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+	MeshMap["cube2"]->TranslationMatrix = glm::translate(MeshMap["cube2"]->TranslationMatrix, glm::vec3(0.0f, 9.0f, 0.0f));
+	MeshMap["cube2"]->physicConvexHull->Velocity = glm::vec3(0.0f, 1.0f, 0.0f);
+	*/
+	
 
 	// Add all object to physic engine
 	for (std::pair<std::string, Mesh3D*> p : MeshMap)
@@ -305,7 +334,7 @@ void ViewerApp::SetupScene()
 
 	// Position camera
 	CameraFPS.SetPosition(glm::vec3(0.0f, 4.0f, 30.0f));
-	TrackBall.Rotate(-200.0f, -120.0f, 0.0f, 1.0f);
+//	TrackBall.Rotate(-200.0f, -120.0f, 0.0f, 1.0f);
 }
 
 void ViewerApp::RenderLoop() 
@@ -316,6 +345,13 @@ void ViewerApp::RenderLoop()
 	{
 		glfwGetFramebufferSize(Window, &ViewportWidth, &ViewportHeight);
 		ProcessInput();
+
+		// Update physic matricies
+		for (std::pair<std::string, Mesh3D*> p : MeshMap) 
+		{
+			p.second->physicConvexHull->ModelMatrix = p.second->GetModelMatrix();
+		}
+		
 		physicEngine.Tick();
 		DrawWorld();
 		glfwSwapBuffers(Window);
@@ -374,6 +410,7 @@ void ViewerApp::DrawWorld()
 		}
 	}
 
+	// Render meshes
 	std::for_each(MeshMap.begin(), MeshMap.end(),
 		[this](std::pair<std::string, Mesh3D*> p)
 		{
@@ -395,20 +432,110 @@ void ViewerApp::DrawWorld()
 				glm::vec3 meshColor(1.0f, 0.0f, 0.0f);
 				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 			}
-			
-			
-			
+
 			mesh->RenderModel = RenderModel;
 			mesh->RenderBoundingBox = RenderBoundingBox;
 			mesh->RenderConvexHull = RenderConvexHull;
 			mesh->Draw(ShaderProgram);
 		});
 
+	// Draw colliding sets
+	std::for_each(physicEngine.Contacts.begin(), physicEngine.Contacts.end(),
+		[this](PhysicEngine::Contact p)
+		{
+				glm::vec3 meshColor(0.0f, 1.0f, 0.0f);
+				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+				
+				std::vector<Vertex3D> vertices;
+				vertices.push_back(Vertex3D{ p.Point } );
+				std::vector<unsigned int> elements;
+				elements.push_back(0);
+
+				GLuint vaoId, vboId, eboId;
+				glGenVertexArrays(1, &vaoId);
+				glGenBuffers(1, &vboId);
+				glGenBuffers(1, &eboId);
+
+				glBindVertexArray(vaoId);
+
+				glBindBuffer(GL_ARRAY_BUFFER, vboId);
+				glBufferData(GL_ARRAY_BUFFER, 1 * sizeof(Vertex3D), &vertices[0], GL_STATIC_DRAW);
+
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, 1 * sizeof(unsigned int), &elements[0], GL_STATIC_DRAW);
+
+				glEnableVertexAttribArray(0);
+
+				glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+				glBindVertexArray(0);			
+
+				// Set up model transform
+				GLuint modelLocation = glGetUniformLocation(ShaderProgram, "model");
+				glm::mat4 identity = glm::mat4(1.0);
+				glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(identity));
+
+				glBindVertexArray(vaoId);
+				glPointSize(5.0f);
+				glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, 0);
+				glBindVertexArray(0);
+
+
+
+		});
+
+
+	// Draw edgi
+	std::for_each(physicEngine.Contacts.begin(), physicEngine.Contacts.end(),
+		[this](PhysicEngine::Contact p)
+		{
+			glm::vec3 meshColor(0.0f, 0.0f, 1.0f);
+			glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
+
+			std::vector<Vertex3D> vertices;
+			vertices.push_back(Vertex3D{ p.E00});
+			vertices.push_back(Vertex3D{ p.E01 });
+			vertices.push_back(Vertex3D{ p.E10 });
+			vertices.push_back(Vertex3D{ p.E11 });
+			std::vector<unsigned int> elements;
+			elements.push_back(0);
+			elements.push_back(1);
+			elements.push_back(2);
+			elements.push_back(3);
+
+			GLuint vaoId, vboId, eboId;
+			glGenVertexArrays(1, &vaoId);
+			glGenBuffers(1, &vboId);
+			glGenBuffers(1, &eboId);
+
+			glBindVertexArray(vaoId);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vboId);
+			glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex3D), &vertices[0], GL_STATIC_DRAW);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(unsigned int), &elements[0], GL_STATIC_DRAW);
+
+			glEnableVertexAttribArray(0);
+
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex3D), (void*)0);
+			glBindVertexArray(0);
+
+			// Set up model transform
+			GLuint modelLocation = glGetUniformLocation(ShaderProgram, "model");
+			glm::mat4 identity = glm::mat4(1.0);
+			glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(identity));
+
+			glBindVertexArray(vaoId);
+			glDrawElements(GL_LINES, 4, GL_UNSIGNED_INT, 0);
+			glBindVertexArray(0);
+
+		});
+
 	glUseProgram(0);
 }
 
 
-bool ViewerApp::CheckMouseObjectsIntersection(const Mesh3D& mesh, float& outDistance) {
+bool ViewerApp::CheckMouseObjectsIntersection(Mesh3D& mesh, float& outDistance) {
 
 	// The start and end ray positions, in Normalized Device Coordinates (NDC)
 	float rayXNDC = ((float)MouseXCoordinate / (float)ViewportWidth - 0.5f) * 2.0f;
@@ -426,7 +553,7 @@ bool ViewerApp::CheckMouseObjectsIntersection(const Mesh3D& mesh, float& outDist
 	glm::vec3 rayDirectionWorld = glm::normalize(rayEndWorld - rayStartWorld);
 	
 	return PhysicEngine::TestRayBoundingBoxIntersection(rayStartWorld, rayDirectionWorld, 
-		mesh.physicConvexHull->boundingBox, mesh.ModelMatrix, outDistance);
+		mesh.physicConvexHull->boundingBox, mesh.GetModelMatrix(), outDistance);
 }
 
 
