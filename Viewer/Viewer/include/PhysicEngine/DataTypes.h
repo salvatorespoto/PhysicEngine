@@ -40,9 +40,9 @@ namespace PhysicEngine
 
 	/** A face */
 	typedef struct {
-		std::vector<unsigned int> vertexIds;
 		glm::ivec3 vId;
 		glm::vec3 n;
+		std::vector<unsigned int> vertexIds;
 	} Face;
 
 	/** 

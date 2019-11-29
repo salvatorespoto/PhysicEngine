@@ -97,8 +97,10 @@ ConvexPolyhedron::ConvexPolyhedron(std::vector<glm::vec3>& vertices, std::vector
 	auto EdgeEqual = [](const Edge& lhs, const Edge& rhs) {
 		return (lhs.x == rhs.x && lhs.y == rhs.y) || (lhs.x == rhs.y && lhs.y == rhs.x);
 	};
-	std::unordered_set<Edge, decltype(EdgeHash), decltype(EdgeEqual) > el(1, EdgeHash, EdgeEqual);
-	for (Edge e : Edges) el.insert(e);
+	std::unordered_set<Edge, decltype(EdgeHash), decltype(EdgeEqual) > et(1, EdgeHash, EdgeEqual);
+	for (Edge e : Edges) et.insert(e);
+	Edges.clear();
+	std::copy(et.begin(), et.end(), std::back_inserter(Edges));
 	
 	// Save faces from triangles array
 	for (int i = 0; i < triangles.size(); i+=3) {
