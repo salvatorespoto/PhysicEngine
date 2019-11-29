@@ -307,19 +307,34 @@ void ViewerApp::SetupScene()
 	Utils::ListFilesInDirectory(meshDirectoryPath, ".obj", objFilesList);
 	
 	// Load meshes
+	//MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+
+	
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
 	MeshMap["floor"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	
+	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
+	MeshMap["suzanne"]->TranslationMatrix = glm::translate(MeshMap["suzanne"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
+	MeshMap["suzanne"]->physicConvexHull->Velocity = glm::vec3(0.0f, -0.2f, 0.0f);
+
+	/*
 	MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 	MeshMap["tetra"]->TranslationMatrix = glm::translate(MeshMap["tetra"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
 	MeshMap["tetra"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.3f, 0.0f);
-	/*
 	
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube"]->TranslationMatrix = glm::translate(MeshMap["cube"]->TranslationMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
-	MeshMap["cube"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	
+	MeshMap["cube"]->physicConvexHull->Velocity = glm::vec3(0.0f, 0.3f, 0.0f);
+
+	MeshMap["tetra2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
+	MeshMap["tetra2"]->TranslationMatrix = glm::translate(MeshMap["tetra2"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
+	MeshMap["tetra2"]->physicConvexHull->Velocity = glm::vec3(0.0f, -0.3f, 0.0f);
+
+	MeshMap["cube2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+	MeshMap["cube2"]->TranslationMatrix = glm::translate(MeshMap["cube2"]->TranslationMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
+	MeshMap["cube2"]->physicConvexHull->Velocity = glm::vec3(0.0f, -0.3f, 0.0f);
+	*/
+	/*
 	MeshMap["cube2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube2"]->TranslationMatrix = glm::translate(MeshMap["cube2"]->TranslationMatrix, glm::vec3(0.0f, 9.0f, 0.0f));
 	MeshMap["cube2"]->physicConvexHull->Velocity = glm::vec3(0.0f, 1.0f, 0.0f);

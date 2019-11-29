@@ -161,69 +161,27 @@ namespace PhysicEngine
 				return false;	
 		}
 
+		
 		// Test direction paralles to the cross product of two edges
-		
-		for (const PhysicEngine::Face f0 : c0.Faces)
+		for(const Edge e0 : c0.Edges)
 		{
-			std::vector<glm::vec3> edges1, edges2;
+			glm::vec3 edge0 = c0.Vertices[e0[1]] - c0.Vertices[e0[0]];
+			
+			for (const Edge e1 : c1.Edges)
+			{
+				glm::vec3 edge1 = c1.Vertices[e1[1]] - c1.Vertices[e1[0]];
 
-			// Edges from face 1
-			edges1.push_back(c0.Vertices[f0.vId[1]] - c0.Vertices[f0.vId[0]]);
-			edges1.push_back(c0.Vertices[f0.vId[2]] - c0.Vertices[f0.vId[1]]);
-			edges1.push_back(c0.Vertices[f0.vId[0]] - c0.Vertices[f0.vId[2]]);
-			
-			for (const PhysicEngine::Face f1 : c1.Faces)
-			{
-				// Edges from face 2
-				edges2.push_back(c1.Vertices[f1.vId[1]] - c1.Vertices[f1.vId[0]]);
-				edges2.push_back(c1.Vertices[f1.vId[2]] - c1.Vertices[f1.vId[1]]);
-				edges2.push_back(c1.Vertices[f1.vId[0]] - c1.Vertices[f1.vId[2]]);
-			
-			
-				for(glm::vec3 e1 : edges1) 
-				{
-					for (glm::vec3 e2 : edges2) 
-					{
-						PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-						glm::vec3&& axis = glm::normalize(glm::cross(M0 * e1, M1 * e2));
-						if (axis == glm::vec3(0, 0, 0)) break;
-						ComputePolyhedronProjectionOnAxis(c0, axis, projectionInfo0);
-						ComputePolyhedronProjectionOnAxis(c1, axis, projectionInfo1);
-						float speed = glm::dot(v, glm::normalize(axis));
-						if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
-							return false;
-					
-					}
-				}
-			
-			}
-		}
-		
-		/*
-		// Test direction paralles to the cross product of c0 and c1 face normals
-		for (const PhysicEngine::Face f0 : c0.Faces) 
-		{
-			for (const PhysicEngine::Face f1 : c1.Faces)
-			{
 				PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-				glm::vec3&& axis = glm::normalize(glm::cross(M0 * f0.n, M1 * f1.n));
-				glm::vec3 a = M0 * f0.n;
-				glm::vec3 b = M1 * f1.n;
+				glm::vec3&& axis = glm::normalize(glm::cross(M0 * edge0, M1 * edge1));
 				if (axis == glm::vec3(0, 0, 0)) break;
 				ComputePolyhedronProjectionOnAxis(c0, axis, projectionInfo0);
 				ComputePolyhedronProjectionOnAxis(c1, axis, projectionInfo1);
 				float speed = glm::dot(v, glm::normalize(axis));
 				if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
-				{
-					ComputePolyhedronProjectionOnAxis(c0, axis, projectionInfo0);
-					ComputePolyhedronProjectionOnAxis(c1, axis, projectionInfo1);
 					return false;
-				}
 			}
-			
 		}
-		*/
-
+		
 		// The two polyhedron intersect: compute the intersection set
 		Object3D contactSet;
 		GetIntersection(c0, c1, pCurr0, pCurr1, side, tFirst, outContacts);
