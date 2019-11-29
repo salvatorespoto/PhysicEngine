@@ -38,8 +38,9 @@ namespace PhysicEngine
 	/** 3d object edge (edge's indexes in the vertex array) */
 	typedef glm::ivec2 Edge;
 
-	/** A contact point */
+	/** A face */
 	typedef struct {
+		std::vector<unsigned int> vertexIds;
 		glm::ivec3 vId;
 		glm::vec3 n;
 	} Face;
@@ -119,6 +120,7 @@ namespace PhysicEngine
 	public:
 
 		std::vector<Vertex> Vertices;
+		std::vector<Edge> Edges;
 		std::vector<Face> Faces;
 
 		float Mass;
