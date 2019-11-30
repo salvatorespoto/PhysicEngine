@@ -180,6 +180,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="include\PhysicEngine\Engine.h" />
+    <ClInclude Include="include\PhysicEngine\force.h" />
     <ClInclude Include="include\PhysicEngine\Functions.h" />
     <ClInclude Include="include\PhysicEngine\DataTypes.h" />
     <ClInclude Include="include\tini_obj_loader.h" />

@@ -225,17 +225,17 @@ void ViewerApp::HandleKeyboardInput()
 		if (SelectedMesh != nullptr)
 		{
 			if (glfwGetKey(Window, GLFW_KEY_I) == GLFW_PRESS)
-				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, 0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+				SelectedMesh->Rotate(0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
 			if (glfwGetKey(Window, GLFW_KEY_K) == GLFW_PRESS)
-				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, -0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
+				SelectedMesh->Rotate(-0.1f, glm::vec3(1.0f, 0.0f, 0.0f));
 			if (glfwGetKey(Window, GLFW_KEY_J) == GLFW_PRESS)
-				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, 0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+				SelectedMesh->Rotate(0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
 			if (glfwGetKey(Window, GLFW_KEY_L) == GLFW_PRESS)
-				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, -0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
+				SelectedMesh->Rotate(-0.1f, glm::vec3(0.0f, 1.0f, 0.0f));
 			if (glfwGetKey(Window, GLFW_KEY_U) == GLFW_PRESS)
-				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, 0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
+				SelectedMesh->Rotate(0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
 			if (glfwGetKey(Window, GLFW_KEY_O) == GLFW_PRESS)
-				SelectedMesh->RotationMatrix = glm::rotate(SelectedMesh->RotationMatrix, -0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
+				SelectedMesh->Rotate(-0.1f, glm::vec3(0.0f, 0.0f, 1.0f));
 		}	
 	}
 }
@@ -291,7 +291,7 @@ void ViewerApp::HandleMouseInput()
 		{
 			// Traslate the mesh on the perpendi plane to the camera front vector
 			glm::vec3 traslation = (TrackBall.UpVector * (float)(-yOffset / 5.0f)) + (TrackBall.RightVector * (float)(xOffset / 5.0f));
-			SelectedMesh->TranslationMatrix = glm::translate(SelectedMesh->TranslationMatrix, traslation);
+			SelectedMesh->Translate(traslation);
 		}
 	}
 }
@@ -312,24 +312,26 @@ void ViewerApp::SetupScene()
 	
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
 	MeshMap["floor"]->physicConvexHull->LinearVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
-
+	/*
 	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
-	MeshMap["suzanne"]->TranslationMatrix = glm::translate(MeshMap["suzanne"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
+	MeshMap["suzanne"]->Translate(glm::vec3(0.0f, 6.0f, 0.0f));
 	MeshMap["suzanne"]->physicConvexHull->LinearVelocity = glm::vec3(0.0f, -0.2f, 0.0f);
 
-	/*
+	
 	MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 	MeshMap["tetra"]->TranslationMatrix = glm::translate(MeshMap["tetra"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
 	MeshMap["tetra"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, 0.3f, 0.0f);
-	
+	*/
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube"]->TranslationMatrix = glm::translate(MeshMap["cube"]->TranslationMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
 	MeshMap["cube"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, 0.3f, 0.0f);
 
+	/**
+
 	MeshMap["tetra2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 	MeshMap["tetra2"]->TranslationMatrix = glm::translate(MeshMap["tetra2"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
 	MeshMap["tetra2"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, -0.3f, 0.0f);
-
+	
 	MeshMap["cube2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube2"]->TranslationMatrix = glm::translate(MeshMap["cube2"]->TranslationMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
 	MeshMap["cube2"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, -0.3f, 0.0f);
@@ -368,6 +370,11 @@ void ViewerApp::RenderLoop()
 		}
 		
 		physicEngine.Tick();
+		for (std::pair<std::string, Mesh3D*> p : MeshMap)
+		{
+			p.second->SetModelMatrix(p.second->physicConvexHull->ModelMatrix);
+		}
+
 		DrawWorld();
 		glfwSwapBuffers(Window);
 		glfwPollEvents();

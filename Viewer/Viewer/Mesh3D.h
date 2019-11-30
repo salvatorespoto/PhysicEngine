@@ -12,6 +12,8 @@
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #define GLFW_INCLUDE_NONE
@@ -24,6 +26,8 @@
 
 #include "include/PhysicEngine/DataTypes.h"
 #include "include/PhysicEngine/RigidBody.h"
+#include <glm\gtx\quaternion.hpp>
+#include <glm\gtx\quaternion.hpp>
 
 
 /** A struct containing info and data for vertex array object, vertex buffer and element buffer */
@@ -85,6 +89,30 @@ public:
 
 	/** Get the model transformation matrix */
 	glm::mat4 GetModelMatrix();
+
+	void SetModelMatrix(glm::mat4 M) 
+	{
+		glm::vec3 scale;
+		glm::quat rotation;
+		glm::vec3 translation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(M, scale, rotation, translation, skew, perspective);
+		RotationMatrix = glm::toMat4(rotation);
+		TranslationMatrix = glm::translate(glm::mat4(1.0f), translation);
+	}
+	
+	void Translate(glm::vec3 translation) 
+	{
+		TranslationMatrix = glm::translate(TranslationMatrix, translation);
+	}
+
+	void Rotate(float angle, glm::vec3 axis)
+	{
+		RotationMatrix = glm::rotate(RotationMatrix, angle, axis);
+	}
+
+
 
 	/** Draw the mesh */
 	void Draw(GLuint shaderProgramId);

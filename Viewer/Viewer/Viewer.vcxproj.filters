@@ -86,6 +86,9 @@
     <ClInclude Include="include\PhysicEngine\RigidBody.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="include\PhysicEngine\force.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
