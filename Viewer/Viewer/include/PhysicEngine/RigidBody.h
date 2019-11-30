@@ -50,6 +50,10 @@ namespace PhysicEngine
 			const glm::vec3& LinearMomentum, const glm::vec3& AngularMomentum,
 			glm::mat3& OrientationMatrix, glm::vec3& LinearVelocity, glm::vec3& AngularVelocity);
 
+		/**
+		 * Update the model matrix from the PRIMARY and SECONDARY state
+		 */
+		void ComputeModelMatrix();
 
 	public:
 

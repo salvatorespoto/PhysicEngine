@@ -6,6 +6,36 @@
 
 #include "force.h"
 
+glm::vec3 NullForce(
+	float t,
+	float ObjectMass,
+	glm::vec3 Position,
+	glm::quat OrientationQuaternion,
+	glm::vec3 LinearMomentum,
+	glm::vec3 AngularMomentum,
+	glm::mat3 OrientationMatrix,
+	glm::vec3 LinearVelocity,
+	glm::vec3 AngularVelocity)
+{
+	return glm::vec3(0, 0, 0);
+}
+
+
+glm::vec3 NullTorque(
+	float t,
+	float ObjectMass,
+	glm::vec3 Position,
+	glm::quat OrientationQuaternion,
+	glm::vec3 LinearMomentum,
+	glm::vec3 AngularMomentum,
+	glm::mat3 OrientationMatrix,
+	glm::vec3 LinearVelocity,
+	glm::vec3 AngularVelocity)
+{
+	return glm::vec3(0, 0, 0);
+}
+
+
 glm::vec3 GravityForce(
 	float t,
 	float ObjectMass,
@@ -17,5 +47,6 @@ glm::vec3 GravityForce(
 	glm::vec3 LinearVelocity,
 	glm::vec3 AngularVelocity)
 {
-	return glm::vec3(0, -1.0f, ObjectMass * 0.98f);
+	return glm::vec3(0.0f, ObjectMass * -0.098f, 0.0f);
 }
+

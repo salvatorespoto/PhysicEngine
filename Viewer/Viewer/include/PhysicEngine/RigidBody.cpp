@@ -118,6 +118,12 @@ RigidBody::RigidBody(std::vector<glm::vec3>& vertices, std::vector<unsigned int>
 
 	ComputeCenterOfMassAndInertiaTensor();
 	ComputeOrientedBoundingBox();
+
+	SetForceFunction(NullForce);
+	SetTorqueFunction(NullTorque);
+
+	// The object is initially still and unrotated
+	SetState(glm::vec3(0.0f, 0.0f, 0.0f), glm::identity<glm::quat>(), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 }
 
 
@@ -240,6 +246,11 @@ void RigidBody::ComputeSecondaryState(
 	OrientationMatrix = glm::toMat4(OrientationQuaternion);
 	LinearVelocity = InvertedMass * LinearMomentum;
 	AngularVelocity = OrientationMatrix * InvertedIntertiaTensor * glm::transpose(OrientationMatrix) * AngularMomentum;
+}
+
+void RigidBody::ComputeModelMatrix()
+{
+	ModelMatrix = glm::mat4(OrientationMatrix) * glm::translate(glm::mat4(1.f), Position);
 }
 
 void RigidBody::ComputeOrientedBoundingBox() {
@@ -386,6 +397,8 @@ void RigidBody::UpdateState(float t, float dt)
 	AngularMomentum = AngularMomentum + sixthdt * (k1_L + 2.0f * (k2_L + k3_L) + k4_L);
 	ComputeSecondaryState(Position, OrientationQuaternion, LinearMomentum, AngularMomentum, 
 		OrientationMatrix, LinearVelocity, AngularVelocity);
+
+	ComputeModelMatrix();
 }
 
 
@@ -405,6 +418,11 @@ void RigidBody::SetState(const glm::vec3& position, const glm::quat& orientation
 	OrientationQuaternion = orientation;
 	LinearMomentum = linearMomentum;
 	AngularMomentum = angularMomentum;
+
+	ComputeSecondaryState(Position, OrientationQuaternion, LinearMomentum, AngularMomentum,
+		OrientationMatrix, LinearVelocity, AngularVelocity);
+
+	ComputeModelMatrix();
 }
 
 

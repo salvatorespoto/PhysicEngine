@@ -41,7 +41,7 @@ namespace PhysicEngine
 		void Tick()
 		{
 			DetectCollisions();
-			//Update();
+			Update();
 		}
 
 		void SetStartingTime(float t) 

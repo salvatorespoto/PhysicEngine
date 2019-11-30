@@ -309,9 +309,7 @@ void ViewerApp::SetupScene()
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
 
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
-	MeshMap["cube"]->Translate(glm::vec3(0.0f, 3.0f, 0.0f));
-	MeshMap["cube"]->PhysicRigidBody->LinearVelocity = glm::vec3(0.0f, -1.0f, 0.0f);
-
+	
 	/*
 	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
 	MeshMap["suzanne"]->Translate(glm::vec3(0.0f, 6.0f, 0.0f));
@@ -340,6 +338,14 @@ void ViewerApp::SetupScene()
 	physicEngine.SetStartingTime(0);
 	physicEngine.SetDeltaTime(1.0f / 30.0f);
 	
+	MeshMap["cube"]->PhysicRigidBody->SetState(
+		glm::vec3(0.0f, 3.0f, 0.0f),
+		glm::identity<glm::quat>(),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
+	);
+	MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
+	
 	for (std::pair<std::string, Mesh3D*> p : MeshMap)
 	{
 		physicEngine.AddRigidBody(p.second->PhysicRigidBody);
@@ -360,10 +366,11 @@ void ViewerApp::RenderLoop()
 		ProcessInput();
 
 		// Update physic matricies
+		/*
 		for (std::pair<std::string, Mesh3D*> p : MeshMap) 
 		{
 			p.second->PhysicRigidBody->ModelMatrix = p.second->GetModelMatrix();
-		}
+		}*/
 		
 		physicEngine.Tick();
 		for (std::pair<std::string, Mesh3D*> p : MeshMap)

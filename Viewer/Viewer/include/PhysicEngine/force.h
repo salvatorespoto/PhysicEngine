@@ -28,6 +28,31 @@ typedef glm::vec3(*TorqueFunction) (
 	glm::vec3 LinearVelocity, 
 	glm::vec3 AngularVelocity);
 
+
+glm::vec3 NullForce(
+	float t,
+	float ObjectMass,
+	glm::vec3 Position,
+	glm::quat OrientationQuaternion,
+	glm::vec3 LinearMomentum,
+	glm::vec3 AngularMomentum,
+	glm::mat3 OrientationMatrix,
+	glm::vec3 LinearVelocity,
+	glm::vec3 AngularVelocity);
+
+
+glm::vec3 NullTorque(
+	float t,
+	float ObjectMass,
+	glm::vec3 Position,
+	glm::quat OrientationQuaternion,
+	glm::vec3 LinearMomentum,
+	glm::vec3 AngularMomentum,
+	glm::mat3 OrientationMatrix,
+	glm::vec3 LinearVelocity,
+	glm::vec3 AngularVelocity);
+
+
 glm::vec3 GravityForce(
 	float t,
 	float ObjectMass,
