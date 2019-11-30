@@ -49,7 +49,7 @@ void Mesh3D::LoadFromObjFile(const boost::filesystem::path& objFilePath)
 	LoadConvexHull(shapes[hullShapeId].mesh, attrib);
 
 	// The convex hull model matrix is a reference the the mesh model matrix
-	physicConvexHull->ModelMatrix = glm::mat4(GetModelMatrix());
+	PhysicRigidBody->ModelMatrix = glm::mat4(GetModelMatrix());
 }
 
 
@@ -114,7 +114,7 @@ void Mesh3D::LoadConvexHull(const tinyobj::mesh_t& mesh, const tinyobj::attrib_t
 	for (Vertex3D v : tempVertices)
 		vertices.push_back(glm::vec3{ v.Position.x, v.Position.y, v.Position.z });
 
-	physicConvexHull = new PhysicEngine::RigidBody(vertices, tempElements);
+	PhysicRigidBody = new PhysicEngine::RigidBody(vertices, tempElements);
 }
 
 
@@ -149,7 +149,7 @@ void Mesh3D::SetupRender()
 
 
 	// Setup physic convex hull rendering 
-	PhysicEngine::RenderPolyhedronData renderPolyHedronData = physicConvexHull->GetRenderPolyhedronData();
+	PhysicEngine::RenderPolyhedronData renderPolyHedronData = PhysicRigidBody->GetRenderPolyhedronData();
 	
 	hullVAO.vertices.resize(renderPolyHedronData.vertices.size());
 	std::transform(renderPolyHedronData.vertices.begin(), renderPolyHedronData.vertices.end(), 
@@ -179,7 +179,7 @@ void Mesh3D::SetupRender()
 
 	
 	// Setup center of mass point rendering 
-	centerOfMassVAO.vertices.push_back(Vertex3D { physicConvexHull->CenterOfMass } );
+	centerOfMassVAO.vertices.push_back(Vertex3D { PhysicRigidBody->CenterOfMass } );
 	centerOfMassVAO.elements.push_back(0);
 
 	glGenVertexArrays(1, &centerOfMassVAO.VaoId);
@@ -201,12 +201,12 @@ void Mesh3D::SetupRender()
 
 
 	// Setup oriented bounding box rendering 
-	physicConvexHull->boundingBox;
+	PhysicRigidBody->boundingBox;
 	boundingBoxVAO.vertices.resize(8);
-	std::transform(std::begin(physicConvexHull->boundingBox.vertices), std::end(physicConvexHull->boundingBox.vertices),
+	std::transform(std::begin(PhysicRigidBody->boundingBox.vertices), std::end(PhysicRigidBody->boundingBox.vertices),
 		boundingBoxVAO.vertices.begin(), [](glm::vec3& inV) { Vertex3D v{ inV }; return v; });
 	boundingBoxVAO.elements.resize(24);
-	std::transform(std::begin(physicConvexHull->boundingBox.edges), std::end(physicConvexHull->boundingBox.edges),
+	std::transform(std::begin(PhysicRigidBody->boundingBox.edges), std::end(PhysicRigidBody->boundingBox.edges),
 		boundingBoxVAO.elements.begin(), [](unsigned int i) { return i; });
 
 	glGenVertexArrays(1, &boundingBoxVAO.VaoId);

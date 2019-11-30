@@ -169,6 +169,7 @@
     <ClCompile Include="include\PhysicEngine\Engine.cpp" />
     <ClCompile Include="include\PhysicEngine\DataTypes.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="include\PhysicEngine\force.cpp" />
     <ClCompile Include="include\PhysicEngine\Functions.cpp" />
     <ClCompile Include="Mesh3D.cpp" />
     <ClCompile Include="main.cpp" />

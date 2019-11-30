@@ -337,8 +337,8 @@ void RigidBody::UpdateState(float t, float dt)
 	// k1 = F(t, State_0) 
 	glm::vec3 k1_X = LinearVelocity;
 	glm::quat k1_Q = (AngularVelocity * OrientationQuaternion);
-	glm::vec3 k1_P = Force(t, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
-	glm::vec3 k1_L = Torque(t, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
+	glm::vec3 k1_P = Force(t, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
+	glm::vec3 k1_L = Torque(t, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
 
 	// State_1 = State_0 + dt/2 * k1
 	Xn = Position + halfdt * k1_X;
@@ -350,8 +350,8 @@ void RigidBody::UpdateState(float t, float dt)
 	// k2 = F(t + dt/2, State_1)
 	glm::vec3 k2_X = Vn;
 	glm::quat k2_Q = 0.5f * (Wn * Qn);
-	glm::vec3 k2_P = Force(t + halfdt, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
-	glm::vec3 k2_L = Torque(t + halfdt, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	glm::vec3 k2_P = Force(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	glm::vec3 k2_L = Torque(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
 	// State_2 = State_1 + dt/2 * k2
 	Xn = Position + halfdt * k2_X;
@@ -363,8 +363,8 @@ void RigidBody::UpdateState(float t, float dt)
 	// k3 = F(t + dt/2, State_2)
 	glm::vec3 k3_X = Vn;
 	glm::quat k3_Q = 0.5f * (Wn * Qn);
-	glm::vec3 k3_P = Force(t + halfdt, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
-	glm::vec3 k3_L = Torque(t + halfdt, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	glm::vec3 k3_P = Force(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	glm::vec3 k3_L = Torque(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
 	// State_3 = State_0 + dt * k3
 	Xn = Position + dt * k3_X;
@@ -376,8 +376,8 @@ void RigidBody::UpdateState(float t, float dt)
 	// k4 = F(t + dt, State_3)
 	glm::vec3 k4_X = Vn;
 	glm::quat k4_Q = 0.5f * (Wn * Qn);
-	glm::vec3 k4_P = Force(t + dt, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
-	glm::vec3 k4_L = Torque(t + dt, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	glm::vec3 k4_P = Force(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	glm::vec3 k4_L = Torque(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
 	// Solution = State_0 + dt * ((1/6)*k1 + (1/3)*k2 + (1/3)*k3 + (1/6)*k4); 
 	Position = Position + sixthdt * (k1_X + 2.0f * (k2_X + k3_X) + k4_X);
@@ -389,15 +389,35 @@ void RigidBody::UpdateState(float t, float dt)
 }
 
 
-/** Get the state of the rigid body */
-void RigidBody::GetState(glm::vec3 x, glm::quat Q, glm::vec3 P, glm::vec3 L) {}
+void RigidBody::GetState(glm::vec3& position, glm::quat& orientation, glm::vec3& linearMomentum, glm::vec3& angularMomentum)
+{
+	position = Position;
+	orientation = OrientationQuaternion;
+	linearMomentum = LinearMomentum;
+	angularMomentum = AngularMomentum;
+}
 
-/** Set the state of the rigid body */
-void RigidBody::SetState(glm::vec3 x, glm::quat Q, glm::vec3 P, glm::vec3 L) {}
 
-void RigidBody::SetForceFunction(ForceFunction force) {}
+void RigidBody::SetState(const glm::vec3& position, const glm::quat& orientation, 
+	const glm::vec3& linearMomentum, const glm::vec3& angularMomentum)
+{
+	Position = position;
+	OrientationQuaternion = orientation;
+	LinearMomentum = linearMomentum;
+	AngularMomentum = angularMomentum;
+}
 
-void RigidBody::SetTorqueFunction(TorqueFunction torque) {}
+
+void RigidBody::SetForceFunction(ForceFunction force) 
+{
+	Force = force;
+}
+
+
+void RigidBody::SetTorqueFunction(TorqueFunction torque) 
+{
+	Torque = torque;
+}
 
 
 

@@ -12,20 +12,54 @@ namespace PhysicEngine
 {
 	class Engine
 	{
-	public:
-		
+
+		private: 
+
+		/**
+		 * List of Rigid Body objects in the simulation
+		 */
 		std::vector<RigidBody*> Objects;
+
+		/**
+		 * Current contacts among objects
+		 */
 		std::vector<Contact> Contacts;
+
+		/**
+		 * Current simulation time
+		 */
+		float currentTime;
+
+		/**
+		 * Delta time between two engine updates 
+		 */
+		float timeStep;
+
+
+	public:
 
 		void Tick()
 		{
 			DetectCollisions();
+			//Update();
 		}
+
+		void SetStartingTime(float t) 
+		{
+			currentTime = t;
+		}
+		
+		void SetDeltaTime(float dt) 
+		{
+			timeStep = dt;
+		}
+
 
 		void AddRigidBody(RigidBody* c)
 		{
 			Objects.push_back(c);
 		}
+
 
 		void DetectCollisions()
 		{
@@ -45,6 +79,25 @@ namespace PhysicEngine
 					};
 				}
 			}
+		}
+
+
+		void Update() 
+		{
+			for (RigidBody* b : Objects)
+			{
+				b->UpdateState(currentTime, timeStep);
+			}
+			
+			currentTime += timeStep;
+		}
+
+		/**
+		 * Return all contacts among objects
+		 */
+		const std::vector<Contact>& GetContacts()
+		{
+			return Contacts;
 		}
 	};
 };

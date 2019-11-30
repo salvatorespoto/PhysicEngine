@@ -306,12 +306,12 @@ void ViewerApp::SetupScene()
 	std::vector<std::string> objFilesList;
 	Utils::ListFilesInDirectory(meshDirectoryPath, ".obj", objFilesList);
 	
-	// Load meshes
-	//MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
-
-	
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
-	MeshMap["floor"]->physicConvexHull->LinearVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+	MeshMap["cube"]->Translate(glm::vec3(0.0f, 3.0f, 0.0f));
+	MeshMap["cube"]->PhysicRigidBody->LinearVelocity = glm::vec3(0.0f, -1.0f, 0.0f);
+
 	/*
 	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
 	MeshMap["suzanne"]->Translate(glm::vec3(0.0f, 6.0f, 0.0f));
@@ -321,13 +321,7 @@ void ViewerApp::SetupScene()
 	MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 	MeshMap["tetra"]->TranslationMatrix = glm::translate(MeshMap["tetra"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
 	MeshMap["tetra"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, 0.3f, 0.0f);
-	*/
-	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
-	MeshMap["cube"]->TranslationMatrix = glm::translate(MeshMap["cube"]->TranslationMatrix, glm::vec3(0.0f, 3.0f, 0.0f));
-	MeshMap["cube"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, 0.3f, 0.0f);
-
-	/**
-
+	
 	MeshMap["tetra2"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 	MeshMap["tetra2"]->TranslationMatrix = glm::translate(MeshMap["tetra2"]->TranslationMatrix, glm::vec3(0.0f, 6.0f, 0.0f));
 	MeshMap["tetra2"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, -0.3f, 0.0f);
@@ -342,11 +336,13 @@ void ViewerApp::SetupScene()
 	MeshMap["cube2"]->physicConvexHull->LinearVelocity  = glm::vec3(0.0f, 1.0f, 0.0f);
 	*/
 	
-
-	// Add all object to physic engine
+	// Set up phisics 
+	physicEngine.SetStartingTime(0);
+	physicEngine.SetDeltaTime(1.0f / 30.0f);
+	
 	for (std::pair<std::string, Mesh3D*> p : MeshMap)
 	{
-		physicEngine.AddRigidBody(p.second->physicConvexHull);
+		physicEngine.AddRigidBody(p.second->PhysicRigidBody);
 	}
 
 	// Position camera
@@ -366,13 +362,13 @@ void ViewerApp::RenderLoop()
 		// Update physic matricies
 		for (std::pair<std::string, Mesh3D*> p : MeshMap) 
 		{
-			p.second->physicConvexHull->ModelMatrix = p.second->GetModelMatrix();
+			p.second->PhysicRigidBody->ModelMatrix = p.second->GetModelMatrix();
 		}
 		
 		physicEngine.Tick();
 		for (std::pair<std::string, Mesh3D*> p : MeshMap)
 		{
-			p.second->SetModelMatrix(p.second->physicConvexHull->ModelMatrix);
+			p.second->SetModelMatrix(p.second->PhysicRigidBody->ModelMatrix);
 		}
 
 		DrawWorld();
@@ -449,7 +445,7 @@ void ViewerApp::DrawWorld()
 			}
 
 			// Colliding mesh
-			if (mesh->physicConvexHull->IsColliding)
+			if (mesh->PhysicRigidBody->IsColliding)
 			{
 				glm::vec3 meshColor(1.0f, 0.0f, 0.0f);
 				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
@@ -462,7 +458,7 @@ void ViewerApp::DrawWorld()
 		});
 
 	// Draw colliding sets
-	std::for_each(physicEngine.Contacts.begin(), physicEngine.Contacts.end(),
+	std::for_each(physicEngine.GetContacts().begin(), physicEngine.GetContacts().end(),
 		[this](PhysicEngine::Contact p)
 		{
 				glm::vec3 meshColor(0.0f, 1.0f, 0.0f);
@@ -507,7 +503,7 @@ void ViewerApp::DrawWorld()
 
 
 	// Draw edgi
-	std::for_each(physicEngine.Contacts.begin(), physicEngine.Contacts.end(),
+	std::for_each(physicEngine.GetContacts().begin(), physicEngine.GetContacts().end(),
 		[this](PhysicEngine::Contact p)
 		{
 			glm::vec3 meshColor(0.0f, 0.0f, 1.0f);
@@ -575,7 +571,7 @@ bool ViewerApp::CheckMouseObjectsIntersection(Mesh3D& mesh, float& outDistance) 
 	glm::vec3 rayDirectionWorld = glm::normalize(rayEndWorld - rayStartWorld);
 	
 	return PhysicEngine::TestRayBoundingBoxIntersection(rayStartWorld, rayDirectionWorld, 
-		mesh.physicConvexHull->boundingBox, mesh.GetModelMatrix(), outDistance);
+		mesh.PhysicRigidBody->boundingBox, mesh.GetModelMatrix(), outDistance);
 }
 
 

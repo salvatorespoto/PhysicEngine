@@ -65,7 +65,7 @@ public:
 
 
 	/** Convex hull used from the physic engine */
-	PhysicEngine::RigidBody* physicConvexHull;
+	PhysicEngine::RigidBody* PhysicRigidBody;
 
 	/** Load mesh Exception */
 	struct LoadMeshException : public std::exception

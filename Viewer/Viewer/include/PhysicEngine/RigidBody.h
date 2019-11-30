@@ -19,7 +19,6 @@
 
 using namespace PhysicEngine;
 
-
 namespace PhysicEngine
 {
 
@@ -76,6 +75,9 @@ namespace PhysicEngine
 		glm::quat OrientationQuaternion;
 		glm::vec3 LinearMomentum;
 		glm::vec3 AngularMomentum;
+		
+		/** Model transformation matrix */
+		glm::mat4 ModelMatrix;
 
 
 		/* The SECONDARY STATE properties*/
@@ -88,13 +90,10 @@ namespace PhysicEngine
 		/* Forces acting on the object */
 		ForceFunction Force;
 		
-		/* Forces acting on the object */
+		/* Torque acting on the object */
 		TorqueFunction Torque;
 
 		bool IsColliding = false;
-
-		/** Model transformation matrix */
-		glm::mat4 ModelMatrix;
 
 		/** Oriented bounding box that contains this polyhedron */
 		BoundingBox boundingBox;
@@ -114,29 +113,45 @@ namespace PhysicEngine
 		/** */
 		void GetFaceFromEdges(glm::ivec2 edges[3]) {}
 
-		/** Get the state of the rigid body */
-		void GetState(glm::vec3 x, glm::quat Q, glm::vec3 P, glm::vec3 L);
+		/** 
+		 * Get the PRIMARY STATE of the rigid body 
+		 */
+		void GetState(glm::vec3& position, glm::quat& orientation, glm::vec3& linearMomentum, glm::vec3& angularMomentum);
 
-		/** Set the state of the rigid body */
-		void SetState(glm::vec3 x, glm::quat Q, glm::vec3 P, glm::vec3 L);
+		/** 
+		 * Set the PRIMARY STATE of the rigid body 
+		 */
+		void SetState(const glm::vec3& position, const glm::quat& orientation, const glm::vec3& linearMomentum, const glm::vec3& angularMomentum);
 
+		/**
+		 * Set the force function acting on the rigid body
+		 */
 		void SetForceFunction(ForceFunction force);
 
+		/**
+		 * Set the force function acting on the rigid body
+		 */
 		void SetTorqueFunction(TorqueFunction torque);
 
 		/** 
-		 * Update the state given force and torque. 
-		 * This method implements a 4th order Runge Kutta method to solve the equation of the motion. 
+		 * Update the rigid body STATE given. 
+		 * This method implements a 4th order Runge Kutta method to solve the equations of the motion. 
 		 */
 		void UpdateState(float t, float dt);
 
-		/** Compute the mass, the center of mass and the inertia tensor for the polyhedron */
+		/** 
+		 * Compute the mass, the center of mass and the inertia tensor for the polyhedron 
+		 */
 		void ComputeCenterOfMassAndInertiaTensor();
 
-		/** Compute the oriented bounding box */
+		/** 
+		 * Compute the oriented bounding box that contains the rigid body
+		 */
 		void ComputeOrientedBoundingBox();
 
-		/** Get data suited for polyhedron rendering */
+		/** 
+		 * Get data suited for the rendering of the rigid body
+		 */
 		RenderPolyhedronData GetRenderPolyhedronData();
 	};
 }
