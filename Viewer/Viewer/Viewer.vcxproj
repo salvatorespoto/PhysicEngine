@@ -172,6 +172,7 @@
     <ClCompile Include="include\PhysicEngine\Functions.cpp" />
     <ClCompile Include="Mesh3D.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="include\PhysicEngine\RigidBody.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="ViewerApp.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="include\tini_obj_loader.h" />
     <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="include\PhysicEngine\RigidBody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vertex3D.h" />

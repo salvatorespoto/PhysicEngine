@@ -122,7 +122,7 @@ namespace PhysicEngine
 	}
 
 
-	bool TestPolyHedronIntersect(const PhysicEngine::ConvexPolyhedron& c0, const PhysicEngine::ConvexPolyhedron& c1, std::vector<Contact>& outContacts)
+	bool TestPolyHedronIntersect(const PhysicEngine::RigidBody& c0, const PhysicEngine::RigidBody& c1, std::vector<Contact>& outContacts)
 	{
 		// This algorithm is based on the separate axis theorem.
 		// For three dimensional convex polyhedra the axes to be test are the ones parallel to face normals and the ones 
@@ -132,7 +132,7 @@ namespace PhysicEngine
 		glm::mat3 M0 = glm::mat3(c0.ModelMatrix);
 		glm::mat3 M1 = glm::mat3(c1.ModelMatrix);
 
-		glm::vec3 v = c1.Velocity - c0.Velocity;	// Relative speed between c0 and c1
+		glm::vec3 v = c1.LinearVelocity - c0.LinearVelocity;	// Relative speed between c0 and c1
 		double tFirst = 0.0f;
 		double tLast = 99999999.0f;
 		int side = 0;
@@ -143,8 +143,8 @@ namespace PhysicEngine
 		for (const PhysicEngine::Face f : c0.Faces)
 		{
 			PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-			ComputePolyhedronProjectionOnAxis(c0, M0 * f.n, projectionInfo0);
-			ComputePolyhedronProjectionOnAxis(c1, M0 * f.n, projectionInfo1);
+			ComputeRigidBodyProjectionOnAxis(c0, M0 * f.n, projectionInfo0);
+			ComputeRigidBodyProjectionOnAxis(c1, M0 * f.n, projectionInfo1);
 			float speed = glm::dot(v, glm::normalize(M0 * f.n));
 			if(NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
 				return false;
@@ -154,8 +154,8 @@ namespace PhysicEngine
 		for (const PhysicEngine::Face f : c1.Faces)
 		{
 			PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-			ComputePolyhedronProjectionOnAxis(c0, M1 * f.n, projectionInfo0);
-			ComputePolyhedronProjectionOnAxis(c1, M1 * f.n, projectionInfo1);
+			ComputeRigidBodyProjectionOnAxis(c0, M1 * f.n, projectionInfo0);
+			ComputeRigidBodyProjectionOnAxis(c1, M1 * f.n, projectionInfo1);
 			float speed = glm::dot(v, glm::normalize(M1 * f.n));
 			if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast)) 
 				return false;	
@@ -174,8 +174,8 @@ namespace PhysicEngine
 				PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
 				glm::vec3&& axis = glm::normalize(glm::cross(M0 * edge0, M1 * edge1));
 				if (axis == glm::vec3(0, 0, 0)) break;
-				ComputePolyhedronProjectionOnAxis(c0, axis, projectionInfo0);
-				ComputePolyhedronProjectionOnAxis(c1, axis, projectionInfo1);
+				ComputeRigidBodyProjectionOnAxis(c0, axis, projectionInfo0);
+				ComputeRigidBodyProjectionOnAxis(c1, axis, projectionInfo1);
 				float speed = glm::dot(v, glm::normalize(axis));
 				if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
 					return false;
@@ -190,7 +190,7 @@ namespace PhysicEngine
 	}
 
 
-	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, double& outMin, double& outMax)	
+	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, double& outMin, double& outMax)
 	{
 		glm::vec3&& d = glm::normalize(axis);
 
@@ -205,7 +205,7 @@ namespace PhysicEngine
 		}
 	}
 
-	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, PhysicEngine::ProjectionInfo& outProjectionInfo)
+	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, PhysicEngine::ProjectionInfo& outProjectionInfo)
 	{
 		glm::vec3&& d = glm::normalize(axis);
 
@@ -463,7 +463,7 @@ namespace PhysicEngine
 	 * @param c0 the first convex polyhedron
 	 * @param c0 the first convex polyhedron* 
 	 */
-	void GetIntersection(const ConvexPolyhedron& c0, const ConvexPolyhedron& c1,
+	void GetIntersection(const RigidBody& c0, const RigidBody& c1,
 		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts)
 	{
 		// c0-max meet c1-min
@@ -472,7 +472,7 @@ namespace PhysicEngine
 			// vertex-{vertex || edge || face} contact
 			if(pInfo0.sMax.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.vertices[0]], 1.0f)).xyz() + (c0.Velocity * (float)tFirst);
+				glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
 				Contact c = Contact
 				{
 					Contact::VERTEX_FACE_CONTACT,
@@ -483,7 +483,7 @@ namespace PhysicEngine
 
 			else if (pInfo1.sMin.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.vertices[0]], 1.0f)).xyz() + (c1.Velocity * (float)tFirst);
+				glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
 				Contact c = Contact
 				{
 					Contact::VERTEX_FACE_CONTACT,
@@ -497,8 +497,8 @@ namespace PhysicEngine
 			{
 				glm::vec3 e0[2] = 
 				{
-					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0)[0]],1.0f)).xyz() + (c0.Velocity * (float)tFirst),
-					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0)[1]],1.0f)).xyz() + (c0.Velocity * (float)tFirst)
+					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0)[0]],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0)[1]],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 				};
 
 				// edge-edge contact
@@ -506,8 +506,8 @@ namespace PhysicEngine
 				{
 					glm::vec3 e1[2] =
 					{
-						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c1.Velocity * (float)tFirst),
-						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c1.Velocity * (float)tFirst)
+						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 					};
 
 					Object3D contactSet;
@@ -565,8 +565,8 @@ namespace PhysicEngine
 						{
 							Object3D::EDGE ,
 							{
-								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.x],1.0f)).xyz() + (c1.Velocity * (float)tFirst),
-								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.Velocity * (float)tFirst)
+								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.x],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 							},
 							{ 
 								glm::ivec2(0, 1)
@@ -619,8 +619,8 @@ namespace PhysicEngine
 						{
 							Object3D::EDGE ,
 							{
-								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.x],1.0f)).xyz() + (c0.Velocity * (float)tFirst),
-								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.Velocity * (float)tFirst)
+								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.x],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 							},
 							{
 								glm::ivec2(0, 1)
@@ -659,8 +659,8 @@ namespace PhysicEngine
 						{
 							Object3D::EDGE ,
 							{
-								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.x],1.0f)).xyz() + (c1.Velocity * (float)tFirst),
-								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.Velocity * (float)tFirst)
+								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.x],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 							},
 							{
 								glm::ivec2(0, 1)
@@ -674,8 +674,8 @@ namespace PhysicEngine
 						Object3D outIntersection;
 						glm::vec3 e1[2] =
 						{
-							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c1.Velocity * (float)tFirst),
-							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c1.Velocity * (float)tFirst)
+							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 						};
 						GetEdgeFacesIntersection(e1[0], e1[1], edges0, outContacts);
 					}
@@ -695,7 +695,7 @@ namespace PhysicEngine
 			// vertex-{vertex || edge || face} contact
 			if (pInfo1.sMax.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.vertices[0]], 1.0f)).xyz() + (c1.Velocity * (float)tFirst);
+				glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
 				Contact c = Contact
 				{
 					Contact::VERTEX_FACE_CONTACT,
@@ -706,7 +706,7 @@ namespace PhysicEngine
 
 			else if (pInfo0.sMin.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.vertices[0]], 1.0f)).xyz() + (c0.Velocity * (float)tFirst);
+				glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
 				Contact c = Contact
 				{
 					Contact::VERTEX_FACE_CONTACT,
@@ -720,8 +720,8 @@ namespace PhysicEngine
 			{
 				glm::vec3 e1[2] =
 				{
-					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0)[0]],1.0f)).xyz() + (c1.Velocity * (float)tFirst),
-					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0)[1]],1.0f)).xyz() + (c1.Velocity * (float)tFirst)
+					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0)[0]],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0)[1]],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 				};
 
 				// edge-edge contact
@@ -729,8 +729,8 @@ namespace PhysicEngine
 				{
 					glm::vec3 e0[2] =
 					{
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c0.Velocity * (float)tFirst),
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c0.Velocity * (float)tFirst)
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 					};
 
 					Object3D contactSet;
@@ -788,8 +788,8 @@ namespace PhysicEngine
 						{
 							Object3D::EDGE ,
 							{
-								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.x],1.0f)).xyz() + (c0.Velocity * (float)tFirst),
-								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.Velocity * (float)tFirst)
+								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.x],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 							},
 							{
 								glm::ivec2(0, 1)
@@ -842,8 +842,8 @@ namespace PhysicEngine
 					{
 						Object3D::EDGE ,
 						{
-							(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.x],1.0f)).xyz() + (c1.Velocity * (float)tFirst),
-							(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.Velocity * (float)tFirst)
+							(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.x],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+							(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 						},
 						{
 							glm::ivec2(0, 1)
@@ -882,8 +882,8 @@ namespace PhysicEngine
 					{
 						Object3D::EDGE ,
 						{
-							(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.x],1.0f)).xyz() + (c0.Velocity * (float)tFirst),
-							(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.Velocity * (float)tFirst)
+							(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.x],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+							(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 						},
 						{
 							glm::ivec2(0, 1)
@@ -897,8 +897,8 @@ namespace PhysicEngine
 					Object3D outIntersection;
 					glm::vec3 e0[2] =
 					{
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c0.Velocity * (float)tFirst),
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c0.Velocity * (float)tFirst)
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 					};
 					GetEdgeFacesIntersection(e0[0], e0[1], edges1, outContacts);
 				}

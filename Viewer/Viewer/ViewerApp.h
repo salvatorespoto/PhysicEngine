@@ -35,7 +35,7 @@
 #include "PhysicEngine/Engine.h"
 #include "PhysicEngine/DataTypes.h"
 #include "PhysicEngine/Functions.h"
-
+#include "PhysicEngine/RigidBody.h"
 
 
 /** Callback used from GLFW to report errors */

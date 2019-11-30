@@ -12,6 +12,8 @@
 #include <glm/gtc/epsilon.hpp>
 
 #include "DataTypes.h"
+#include "RigidBody.h"
+
 
 namespace PhysicEngine
 {
@@ -46,7 +48,7 @@ namespace PhysicEngine
 	 * @param p0 the first polyhedron
 	 * @param p1 the second polyhedron
 	 */
-	bool TestPolyHedronIntersect(const PhysicEngine::ConvexPolyhedron& p0, const PhysicEngine::ConvexPolyhedron& p1, std::vector<Contact>& outContacts);
+	bool TestPolyHedronIntersect(const PhysicEngine::RigidBody& p0, const PhysicEngine::RigidBody& p1, std::vector<Contact>& outContacts);
 
 	/** 
 	 * Compute the interval of a convex polyhedron projection onto a specifi axis
@@ -60,7 +62,7 @@ namespace PhysicEngine
 	 * @param outMin the output minimum value projection
 	 * @param outMax the output minimum value projection
 	 */
-	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, double& outMin, double& outMax);
+	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, double& outMin, double& outMax);
 
 
 	/**
@@ -71,7 +73,7 @@ namespace PhysicEngine
 	 * @param 
 	 * @param 
 	 */
-	void ComputePolyhedronProjectionOnAxis(const PhysicEngine::ConvexPolyhedron& c0, const glm::vec3& axis, PhysicEngine::ProjectionInfo& outProjectionInfo);
+	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, PhysicEngine::ProjectionInfo& outProjectionInfo);
 
 
 	/**
@@ -92,7 +94,7 @@ namespace PhysicEngine
 	 * @param c0 the first convex polyhedron
 	 * @param c0 the first convex polyhedron* @param
 	 */
-	void GetIntersection(const ConvexPolyhedron& c0, const ConvexPolyhedron& c1,
+	void GetIntersection(const RigidBody& c0, const RigidBody& c1,
 		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts);
 	
 	bool GetEdgeEdgeIntersection(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1, Object3D& outIntersection);

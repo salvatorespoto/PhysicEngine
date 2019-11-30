@@ -5,7 +5,7 @@
 
 #include "DataTypes.h"
 #include "Functions.h"
-
+#include "RigidBody.h"
 
 /** The phisic engine */
 namespace PhysicEngine
@@ -14,7 +14,7 @@ namespace PhysicEngine
 	{
 	public:
 		
-		std::vector<ConvexPolyhedron*> Objects;
+		std::vector<RigidBody*> Objects;
 		std::vector<Contact> Contacts;
 
 		void Tick()
@@ -22,7 +22,7 @@ namespace PhysicEngine
 			DetectCollisions();
 		}
 
-		void AddConvexPolyhedron(ConvexPolyhedron* c)
+		void AddRigidBody(RigidBody* c)
 		{
 			Objects.push_back(c);
 		}
@@ -30,11 +30,11 @@ namespace PhysicEngine
 		void DetectCollisions()
 		{
 			Contacts.clear();
-			for (ConvexPolyhedron* c : Objects) c->IsColliding = false;
+			for (RigidBody* c : Objects) c->IsColliding = false;
 
-			for	(ConvexPolyhedron* c0 : Objects) 
+			for	(RigidBody* c0 : Objects)
 			{
-				for (ConvexPolyhedron* c1 : Objects)
+				for (RigidBody* c1 : Objects)
 				{
 					if (c0 == c1) break;
 

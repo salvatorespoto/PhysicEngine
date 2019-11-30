@@ -23,6 +23,7 @@
 #include "Vertex3D.h"
 
 #include "include/PhysicEngine/DataTypes.h"
+#include "include/PhysicEngine/RigidBody.h"
 
 
 /** A struct containing info and data for vertex array object, vertex buffer and element buffer */
@@ -60,7 +61,7 @@ public:
 
 
 	/** Convex hull used from the physic engine */
-	PhysicEngine::ConvexPolyhedron* physicConvexHull;
+	PhysicEngine::RigidBody* physicConvexHull;
 
 	/** Load mesh Exception */
 	struct LoadMeshException : public std::exception

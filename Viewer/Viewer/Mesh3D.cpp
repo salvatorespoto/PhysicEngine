@@ -114,7 +114,7 @@ void Mesh3D::LoadConvexHull(const tinyobj::mesh_t& mesh, const tinyobj::attrib_t
 	for (Vertex3D v : tempVertices)
 		vertices.push_back(glm::vec3{ v.Position.x, v.Position.y, v.Position.z });
 
-	physicConvexHull = new PhysicEngine::ConvexPolyhedron(vertices, tempElements);
+	physicConvexHull = new PhysicEngine::RigidBody(vertices, tempElements);
 }
 
 
