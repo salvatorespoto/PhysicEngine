@@ -51,7 +51,7 @@ namespace PhysicEngine
 	 * A contact between two objects. 
 	 * All the contact that could occur between two objects are resolved to two types of contact:
 	 *	VERTEX_FACE_CONTACT and EDGE_EDGE_CONTACT.
-	 */
+	 * /
 	typedef struct Contact {
 		enum Type { VERTEX_FACE_CONTACT = 0, EDGE_EDGE_CONTACT };	// Type of contact 
 		Type type;				// Type of contact
@@ -66,7 +66,7 @@ namespace PhysicEngine
 		glm::vec3 E10;
 		glm::vec3 E11;
 	} Contact;
-	
+	*/
 	/** A 3d bounding box. Faces are quads */
 	typedef struct BoundingBox {
 		glm::vec3 center;			// Untrasformed center

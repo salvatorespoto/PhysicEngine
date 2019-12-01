@@ -27,7 +27,7 @@ const float RESTITUTION_COEFFICIENT = 0.8f;
 
 /**
  * A contact between two RigidBody
- * /
+ */
 typedef struct
 {
 	enum Type { VERTEX_FACE = 0, EDGE_EDGE };	// Possible contacts types
@@ -44,7 +44,7 @@ typedef struct
 	glm::vec3 edgeB[2];							// If it is an EDGE_EDGE contact the edge from the RigidBody B, stores the two
 												// edge vertices
 } Contact;
-*/
+
 
 /** 
  * Process a colliding contact bewtween two RigidBody

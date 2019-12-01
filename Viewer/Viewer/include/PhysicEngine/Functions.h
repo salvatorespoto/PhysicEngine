@@ -98,7 +98,7 @@ namespace PhysicEngine
 	void GetIntersection(const RigidBody& c0, const RigidBody& c1,
 		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts);
 	
-	bool GetEdgeEdgeIntersection(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1, Object3D& outIntersection);
+	bool GetEdgeEdgeIntersection(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1, std::vector<glm::vec3>& outIntersection);
 
 	void GetEdgeFacesIntersection(const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges, std::vector<Contact>& outContacts);
 
