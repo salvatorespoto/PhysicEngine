@@ -122,7 +122,7 @@ namespace PhysicEngine
 	}
 
 
-	bool TestPolyHedronIntersect(const PhysicEngine::RigidBody& c0, const PhysicEngine::RigidBody& c1, std::vector<Contact>& outContacts)
+	bool TestRigidBodyIntersect(const PhysicEngine::RigidBody& c0, const PhysicEngine::RigidBody& c1, std::vector<Contact>& outContacts)
 	{
 		// This algorithm is based on the separate axis theorem.
 		// For three dimensional convex polyhedra the axes to be test are the ones parallel to face normals and the ones 
@@ -472,24 +472,30 @@ namespace PhysicEngine
 			// vertex-{vertex || edge || face} contact
 			if(pInfo0.sMax.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
-				Contact c = Contact
+				if (pInfo1.sMin.type == ContactSet::FACE) 
 				{
-					Contact::VERTEX_FACE_CONTACT,
-					v
-				};
-				outContacts.push_back(c);
+					glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
+					Contact c = Contact
+					{
+						Contact::VERTEX_FACE_CONTACT,
+						v
+					};
+					outContacts.push_back(c);
+				}
 			}
 
 			else if (pInfo1.sMin.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
-				Contact c = Contact
+				if (pInfo0.sMax.type == ContactSet::FACE)
 				{
-					Contact::VERTEX_FACE_CONTACT,
-					v
-				};
-				outContacts.push_back(c);
+					glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
+					Contact c = Contact
+					{
+						Contact::VERTEX_FACE_CONTACT,
+						v
+					};
+					outContacts.push_back(c);
+				}
 			}
 
 			// edge-{ edge || face} contact
@@ -527,7 +533,7 @@ namespace PhysicEngine
 				}
 
 				// edge-face contact
-				else 
+				else if (pInfo1.sMin.type == ContactSet::FACE)
 				{
 					// Compute the intersection between the edge and all the faces edges 
 					std::map<std::string, glm::ivec2> edgesMap;
@@ -695,24 +701,31 @@ namespace PhysicEngine
 			// vertex-{vertex || edge || face} contact
 			if (pInfo1.sMax.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
-				Contact c = Contact
+				if (pInfo0.sMin.type == ContactSet::FACE)
 				{
-					Contact::VERTEX_FACE_CONTACT,
-					v
-				};
-				outContacts.push_back(c);
+					glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
+					Contact c = Contact
+					{
+						Contact::VERTEX_FACE_CONTACT,
+						v
+					};
+					outContacts.push_back(c);
+				}
 			}
 
 			else if (pInfo0.sMin.type == ContactSet::VERTEX)
 			{
-				glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
-				Contact c = Contact
+				if (pInfo1.sMax.type == ContactSet::FACE) 
 				{
-					Contact::VERTEX_FACE_CONTACT,
-					v
-				};
-				outContacts.push_back(c);
+
+					glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
+					Contact c = Contact
+					{
+						Contact::VERTEX_FACE_CONTACT,
+						v
+					};
+					outContacts.push_back(c);
+				}
 			}
 
 			// edge-{ edge || face} contact
@@ -750,7 +763,7 @@ namespace PhysicEngine
 				}
 
 				// edge-face contact
-				else
+				else if (pInfo0.sMin.type == ContactSet::FACE)
 				{
 					// Compute the intersection between the edge and all the faces edges 
 					std::map<std::string, glm::ivec2> edgesMap;

@@ -66,7 +66,7 @@ namespace PhysicEngine
 		glm::vec3 E10;
 		glm::vec3 E11;
 	} Contact;
-
+	
 	/** A 3d bounding box. Faces are quads */
 	typedef struct BoundingBox {
 		glm::vec3 center;			// Untrasformed center

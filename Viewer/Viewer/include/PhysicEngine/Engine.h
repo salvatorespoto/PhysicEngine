@@ -64,18 +64,18 @@ namespace PhysicEngine
 		void DetectCollisions()
 		{
 			Contacts.clear();
-			for (RigidBody* c : Objects) c->IsColliding = false;
+			for (RigidBody* rb : Objects) rb->IsColliding = false;
 
-			for	(RigidBody* c0 : Objects)
+			for	(RigidBody* rbA : Objects)
 			{
-				for (RigidBody* c1 : Objects)
+				for (RigidBody* rbB : Objects)
 				{
-					if (c0 == c1) break;
+					if (rbA == rbB) break;
 
-					if (TestPolyHedronIntersect(*c0, *c1, Contacts)) 
+					if (TestRigidBodyIntersect(*rbA, *rbB, Contacts))
 					{
-						c0->IsColliding = true;
-						c1->IsColliding = true;
+						rbA->IsColliding = true;
+						rbB->IsColliding = true;
 					};
 				}
 			}

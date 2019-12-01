@@ -234,23 +234,11 @@ void RigidBody::ComputeCenterOfMassAndInertiaTensorSubExpression(float& w0, floa
 	g2 = f2 + w2 * (f1 + w2);
 }
 
-void RigidBody::ComputeSecondaryState(
-	const glm::vec3& Position, 
-	const glm::quat& OrientationQuaternion, 
-	const glm::vec3& LinearMomentum, 
-	const glm::vec3& AngularMomentum, 
-	glm::mat3& OrientationMatrix, 
-	glm::vec3& LinearVelocity, 
-	glm::vec3& AngularVelocity) 
-{
-	OrientationMatrix = glm::toMat4(OrientationQuaternion);
-	LinearVelocity = InvertedMass * LinearMomentum;
-	AngularVelocity = OrientationMatrix * InvertedIntertiaTensor * glm::transpose(OrientationMatrix) * AngularMomentum;
-}
+
 
 void RigidBody::ComputeModelMatrix()
 {
-	ModelMatrix = glm::mat4(OrientationMatrix) * glm::translate(glm::mat4(1.f), Position);
+	ModelMatrix = glm::translate(glm::mat4(1.0f), Position) * glm::mat4(OrientationQuaternion);
 }
 
 void RigidBody::ComputeOrientedBoundingBox() {
@@ -338,6 +326,7 @@ void RigidBody::ComputeOrientedBoundingBox() {
 
 void RigidBody::UpdateState(float t, float dt)
 {
+	
 	float halfdt = dt / 2.0f;
 	float sixthdt = dt / 6.0f;
 
@@ -347,7 +336,7 @@ void RigidBody::UpdateState(float t, float dt)
 
 	// k1 = F(t, State_0) 
 	glm::vec3 k1_X = LinearVelocity;
-	glm::quat k1_Q = (AngularVelocity * OrientationQuaternion);
+	glm::quat k1_Q = 0.5f * (glm::quat(0.0f, AngularVelocity) * OrientationQuaternion);
 	glm::vec3 k1_P = Force(t, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
 	glm::vec3 k1_L = Torque(t, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
 
@@ -360,7 +349,7 @@ void RigidBody::UpdateState(float t, float dt)
 
 	// k2 = F(t + dt/2, State_1)
 	glm::vec3 k2_X = Vn;
-	glm::quat k2_Q = 0.5f * (Wn * Qn);
+	glm::quat k2_Q = 0.5f * (glm::quat(0.0f, Wn) * Qn);
 	glm::vec3 k2_P = Force(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 	glm::vec3 k2_L = Torque(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
@@ -373,7 +362,7 @@ void RigidBody::UpdateState(float t, float dt)
  
 	// k3 = F(t + dt/2, State_2)
 	glm::vec3 k3_X = Vn;
-	glm::quat k3_Q = 0.5f * (Wn * Qn);
+	glm::quat k3_Q = 0.5f * (glm::quat(0.0f, Wn) * Qn);
 	glm::vec3 k3_P = Force(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 	glm::vec3 k3_L = Torque(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
@@ -386,7 +375,7 @@ void RigidBody::UpdateState(float t, float dt)
 
 	// k4 = F(t + dt, State_3)
 	glm::vec3 k4_X = Vn;
-	glm::quat k4_Q = 0.5f * (Wn * Qn);
+	glm::quat k4_Q = 0.5f * (glm::quat(0.0f, Wn) * Qn);
 	glm::vec3 k4_P = Force(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 	glm::vec3 k4_L = Torque(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
@@ -395,10 +384,28 @@ void RigidBody::UpdateState(float t, float dt)
 	OrientationQuaternion = OrientationQuaternion + sixthdt * (k1_Q + 2.0f * (k2_Q + k3_Q) + k4_Q);
 	LinearMomentum = LinearMomentum + sixthdt * (k1_P + 2.0f * (k2_P + k3_P) + k4_P);
 	AngularMomentum = AngularMomentum + sixthdt * (k1_L + 2.0f * (k2_L + k3_L) + k4_L);
+	
+	glm::normalize(OrientationQuaternion);
+	
 	ComputeSecondaryState(Position, OrientationQuaternion, LinearMomentum, AngularMomentum, 
 		OrientationMatrix, LinearVelocity, AngularVelocity);
 
 	ComputeModelMatrix();
+}
+
+
+void RigidBody::ComputeSecondaryState(
+	const glm::vec3& Position,
+	const glm::quat& OrientationQuaternion,
+	const glm::vec3& LinearMomentum,
+	const glm::vec3& AngularMomentum,
+	glm::mat3& OrientationMatrix,
+	glm::vec3& LinearVelocity,
+	glm::vec3& AngularVelocity)
+{
+	OrientationMatrix = glm::toMat4(OrientationQuaternion);
+	LinearVelocity = InvertedMass * LinearMomentum;
+	AngularVelocity = OrientationMatrix * InvertedIntertiaTensor * glm::transpose(OrientationMatrix) * AngularMomentum;
 }
 
 

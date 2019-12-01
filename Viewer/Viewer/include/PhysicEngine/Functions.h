@@ -13,6 +13,7 @@
 
 #include "DataTypes.h"
 #include "RigidBody.h"
+#include "Collision.h"
 
 
 namespace PhysicEngine
@@ -48,7 +49,7 @@ namespace PhysicEngine
 	 * @param p0 the first polyhedron
 	 * @param p1 the second polyhedron
 	 */
-	bool TestPolyHedronIntersect(const PhysicEngine::RigidBody& p0, const PhysicEngine::RigidBody& p1, std::vector<Contact>& outContacts);
+	bool TestRigidBodyIntersect(const PhysicEngine::RigidBody& p0, const PhysicEngine::RigidBody& p1, std::vector<Contact>& outContacts);
 
 	/** 
 	 * Compute the interval of a convex polyhedron projection onto a specifi axis
