@@ -1,5 +1,6 @@
 // Copyright 2019 Salvatore Spoto
 
+
 #include "ViewerApp.h"
 
 
@@ -348,8 +349,8 @@ void ViewerApp::SetupScene()
 
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
 
-	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
-	MeshMap["cube"]->PhysicRigidBody->SetState(
+	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
+	MeshMap["suzanne"]->PhysicRigidBody->SetState(
 		glm::vec3(-3.0f, 7.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, -1.0f, 0.0f),
@@ -482,7 +483,7 @@ void ViewerApp::DrawWorld()
 				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 				
 				std::vector<Vertex3D> vertices;
-				vertices.push_back(Vertex3D{ p.Point } );
+				vertices.push_back(Vertex3D{ p.point } );
 				std::vector<unsigned int> elements;
 				elements.push_back(0);
 
@@ -527,10 +528,10 @@ void ViewerApp::DrawWorld()
 			glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 
 			std::vector<Vertex3D> vertices;
-			vertices.push_back(Vertex3D{ p.E00});
-			vertices.push_back(Vertex3D{ p.E01 });
-			vertices.push_back(Vertex3D{ p.E10 });
-			vertices.push_back(Vertex3D{ p.E11 });
+			vertices.push_back(Vertex3D{ p.edgeA[0]});
+			vertices.push_back(Vertex3D{ p.edgeA[1] });
+			vertices.push_back(Vertex3D{ p.edgeB[0] });
+			vertices.push_back(Vertex3D{ p.edgeB[1] });
 			std::vector<unsigned int> elements;
 			elements.push_back(0);
 			elements.push_back(1);

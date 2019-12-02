@@ -98,10 +98,23 @@ namespace PhysicEngine
 	void GetIntersection(const RigidBody& c0, const RigidBody& c1,
 		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts);
 	
-	bool GetEdgeEdgeIntersection(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1, std::vector<glm::vec3>& outIntersection);
 
-	void GetEdgeFacesIntersection(const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges, std::vector<Contact>& outContacts);
+	/**
+	 * 
+	 */
+	std::vector<Contact> GetEdgeEdgeIntersection(RigidBody rb0, RigidBody rb1, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1);
 
-	void GetCoplanarFaceFaceIntersection(std::vector<Object3D> f0, std::vector<Object3D> f1, std::vector<Contact>& outContacts);
+
+	/**
+	 *
+	 */
+	std::vector<Contact> GetEdgeFacesIntersection(RigidBody rb0, RigidBody rb1, const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges);
+
+
+	/**
+	 *
+	 */
+	std::vector<Contact> GetCoplanarFaceFaceIntersection(RigidBody rb0, RigidBody rb1, std::vector<Object3D> f0, std::vector<Object3D> f1);
 }
+
 #endif
