@@ -103,6 +103,8 @@ namespace PhysicEngine
 		BoundingBox boundingBox;
 
 
+		RigidBody() {}
+
 		/**
 		 * Construct a convex polyhedron from a vertex list and a triangle face list.
 		 * Note that only triangulated convex polygon are supported,

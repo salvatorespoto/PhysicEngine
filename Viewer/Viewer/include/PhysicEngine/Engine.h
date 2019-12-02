@@ -100,5 +100,5 @@ namespace PhysicEngine
 			return Contacts;
 		}
 	};
-};
+}
 #endif

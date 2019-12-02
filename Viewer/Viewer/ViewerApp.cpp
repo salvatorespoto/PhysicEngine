@@ -1,5 +1,6 @@
 // Copyright 2019 Salvatore Spoto
 
+
 #include "ViewerApp.h"
 
 
@@ -311,26 +312,17 @@ void ViewerApp::SetupScene()
 
 	std::vector<std::string> objFilesList;
 	Utils::ListFilesInDirectory(meshDirectoryPath, ".obj", objFilesList);
-	
-	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
-	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));	
-	//MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
-	//MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 
-	
 	// Set up phisics 
 	physicEngine.SetStartingTime(0);
 	physicEngine.SetDeltaTime(1.0f / 30.0f);
+
 	
+	//MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
+	//MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
+
 	/*MeshMap["suzanne"]->PhysicRigidBody->SetState(
 		glm::vec3(0.0f, 7.0f, 0.0f),
-		glm::identity<glm::quat>(),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f)
-	);
-
-	MeshMap["cube"]->PhysicRigidBody->SetState(
-		glm::vec3(-3.0f, 7.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
@@ -342,7 +334,7 @@ void ViewerApp::SetupScene()
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
 	);
-	*/
+	
 	//MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
 	
 	MeshMap["suzanne"]->PhysicRigidBody->LinearMomentum = MeshMap["suzanne"]->PhysicRigidBody->Mass * glm::vec3(0.0f, -0.3f, 0.0f);
@@ -353,7 +345,23 @@ void ViewerApp::SetupScene()
 
 	MeshMap["tetra"]->PhysicRigidBody->LinearMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0.0f, -0.1f, 0.0f);
 	MeshMap["tetra"]->PhysicRigidBody->AngularMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0, 0.1f, 0.1f);
+	*/
 
+	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
+	MeshMap["floor"]->PhysicRigidBody->SetState(
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::identity<glm::quat>(),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
+	);
+
+	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+	MeshMap["cube"]->PhysicRigidBody->SetState(
+		glm::vec3(0.0f, 5.0f, 0.0f),
+		glm::identity<glm::quat>(),
+		glm::vec3(0.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
+	);
 
 	for (std::pair<std::string, Mesh3D*> p : MeshMap)
 	{
@@ -481,7 +489,7 @@ void ViewerApp::DrawWorld()
 				glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 				
 				std::vector<Vertex3D> vertices;
-				vertices.push_back(Vertex3D{ p.Point } );
+				vertices.push_back(Vertex3D{ p.point } );
 				std::vector<unsigned int> elements;
 				elements.push_back(0);
 
@@ -526,10 +534,10 @@ void ViewerApp::DrawWorld()
 			glUniform3f(glGetUniformLocation(ShaderProgram, "meshColor"), meshColor.x, meshColor.y, meshColor.z);
 
 			std::vector<Vertex3D> vertices;
-			vertices.push_back(Vertex3D{ p.E00});
-			vertices.push_back(Vertex3D{ p.E01 });
-			vertices.push_back(Vertex3D{ p.E10 });
-			vertices.push_back(Vertex3D{ p.E11 });
+			vertices.push_back(Vertex3D{ p.edgeA[0]});
+			vertices.push_back(Vertex3D{ p.edgeA[1] });
+			vertices.push_back(Vertex3D{ p.edgeB[0] });
+			vertices.push_back(Vertex3D{ p.edgeB[1] });
 			std::vector<unsigned int> elements;
 			elements.push_back(0);
 			elements.push_back(1);

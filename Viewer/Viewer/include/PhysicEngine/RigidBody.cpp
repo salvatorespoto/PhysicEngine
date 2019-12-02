@@ -326,7 +326,6 @@ void RigidBody::ComputeOrientedBoundingBox() {
 
 void RigidBody::UpdateState(float t, float dt)
 {
-	
 	float halfdt = dt / 2.0f;
 	float sixthdt = dt / 6.0f;
 
@@ -384,12 +383,11 @@ void RigidBody::UpdateState(float t, float dt)
 	OrientationQuaternion = OrientationQuaternion + sixthdt * (k1_Q + 2.0f * (k2_Q + k3_Q) + k4_Q);
 	LinearMomentum = LinearMomentum + sixthdt * (k1_P + 2.0f * (k2_P + k3_P) + k4_P);
 	AngularMomentum = AngularMomentum + sixthdt * (k1_L + 2.0f * (k2_L + k3_L) + k4_L);
-	
 	glm::normalize(OrientationQuaternion);
-	
+
 	ComputeSecondaryState(Position, OrientationQuaternion, LinearMomentum, AngularMomentum, 
 		OrientationMatrix, LinearVelocity, AngularVelocity);
-
+	
 	ComputeModelMatrix();
 }
 
