@@ -1012,7 +1012,7 @@ namespace PhysicEngine
 			if (lp0 > lp1) std::swap(lp0, lp1);
 			if (lq0 > lq1) std::swap(lq0, lq1);
 
-			if((lp0 < pI && pI < lp1) && (lq0 < qI && qI < lq1))
+			if((lp0 <= pI && pI <= lp1) && (lq0 <= qI && qI <= lq1))
 			{
 				//outIntersection.type = Object3D::VERTEX;
 				contacts.push_back(
@@ -1145,8 +1145,11 @@ namespace PhysicEngine
 
 		for (Object3D e0 : edges0)
 		{
-			for(Contact c : GetEdgeFacesIntersection(rb0, rb1, e0.vertices[0], e0.vertices[1], edges1))
-				contacts.push_back(c);
+			for(Contact c : GetEdgeFacesIntersection(rb0, rb1, e0.vertices[0], e0.vertices[1], edges1)) 
+			{
+				if(std::find(contacts.begin(), contacts.end(), c) == contacts.end() ) contacts.push_back(c);
+				//contacts.push_back(c);
+			}	
 		}
 
 		// Check what points of face 1 are inside face0
@@ -1172,8 +1175,7 @@ namespace PhysicEngine
 			}
 
 			if (insideE00) {
-				contacts.push_back(
-					Contact
+				Contact c
 					{
 						Contact::Type::VERTEX_FACE,
 						rb1,
@@ -1182,12 +1184,12 @@ namespace PhysicEngine
 						face0Normal,
 						{ glm::vec3(0), glm::vec3(0) },
 						{ glm::vec3(0), glm::vec3(0) }
-					});
+					};
+				if (std::find(contacts.begin(), contacts.end(), c) == contacts.end()) contacts.push_back(c);
 			}
 
 			if (insideE01) {
-				contacts.push_back(
-					Contact
+				Contact c
 					{
 						Contact::Type::VERTEX_FACE,
 						rb1,
@@ -1196,11 +1198,11 @@ namespace PhysicEngine
 						face0Normal,
 						{ glm::vec3(0), glm::vec3(0) },
 						{ glm::vec3(0), glm::vec3(0) }
-					});
+					};
+				if (std::find(contacts.begin(), contacts.end(), c) == contacts.end()) contacts.push_back(c);
 			}
 		}
 
 		return contacts;
 	}
-
 }

@@ -46,6 +46,16 @@ namespace PhysicEngine
 													// edge vertices
 		glm::vec3 edgeB[2] = { glm::vec3(0), glm::vec3(0) };							// If it is an EDGE_EDGE contact the edge from the RigidBody B, stores the two
 													// edge vertices
+
+		bool operator ==(Contact c)
+		{
+			return point == c.point;
+		}
+
+		bool operator !=(Contact c)
+		{
+			return point != c.point;
+		};
 	};
 
 

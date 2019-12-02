@@ -348,10 +348,16 @@ void ViewerApp::SetupScene()
 	*/
 
 	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
+	MeshMap["floor"]->PhysicRigidBody->SetState(
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::identity<glm::quat>(),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
+	);
 
-	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
-	MeshMap["suzanne"]->PhysicRigidBody->SetState(
-		glm::vec3(-3.0f, 7.0f, 0.0f),
+	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
+	MeshMap["cube"]->PhysicRigidBody->SetState(
+		glm::vec3(0.0f, 5.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, -1.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
