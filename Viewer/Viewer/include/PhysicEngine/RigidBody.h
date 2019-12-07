@@ -99,6 +99,8 @@ namespace PhysicEngine
 
 		bool IsColliding = false;
 
+		bool IsImmovable = false;
+
 		/** Oriented bounding box that contains this polyhedron */
 		BoundingBox boundingBox;
 
@@ -115,6 +117,16 @@ namespace PhysicEngine
 		 * @param the list of Polyhedron Face
 		 */
 		RigidBody(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles);
+
+		/**
+		 * Set the force function acting on the rigid body
+		 */
+		void SetImmovable(bool b)
+		{ 
+			this->IsImmovable = b;
+			InvertedMass = 0;
+			InvertedIntertiaTensor = glm::mat3(0.0f);
+		}
 
 		/** */
 		void GetFaceFromEdges(glm::ivec2 edges[3]) {}

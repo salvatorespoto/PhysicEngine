@@ -54,6 +54,9 @@
     <ClCompile Include="include\PhysicEngine\collision.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="include\PhysicEngine\LPCSolver.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ViewerApp.h">
@@ -96,6 +99,9 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\PhysicEngine\collision.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\LPCSolver.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>
