@@ -318,50 +318,50 @@ void ViewerApp::SetupScene()
 	physicEngine.SetDeltaTime(1.0f / 30.0f);
 
 	
-	//MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
-	//MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
-
-	/*MeshMap["suzanne"]->PhysicRigidBody->SetState(
+	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
+	MeshMap["suzanne"]->PhysicRigidBody->SetState(
 		glm::vec3(0.0f, 7.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
 	);
-
+	MeshMap["suzanne"]->PhysicRigidBody->LinearMomentum = MeshMap["suzanne"]->PhysicRigidBody->Mass * glm::vec3(-0.3f, 0.3f, 0.0f);
+	MeshMap["suzanne"]->PhysicRigidBody->AngularMomentum = MeshMap["suzanne"]->PhysicRigidBody->Mass * glm::vec3(0, 0.0f, 0);
+	MeshMap["suzanne"]->PhysicRigidBody->SetForceFunction(GravityForce);
+	
+	
+	MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
 	MeshMap["tetra"]->PhysicRigidBody->SetState(
-		glm::vec3(3.0f, 7.0f, 0.0f),
+		glm::vec3(3.0f, 4.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
 	);
-	
-	//MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
-	
-	MeshMap["suzanne"]->PhysicRigidBody->LinearMomentum = MeshMap["suzanne"]->PhysicRigidBody->Mass * glm::vec3(0.0f, -0.3f, 0.0f);
-	MeshMap["suzanne"]->PhysicRigidBody->AngularMomentum = MeshMap["suzanne"]->PhysicRigidBody->Mass * glm::vec3(0, 0.1f, 0);
-
-	MeshMap["cube"]->PhysicRigidBody->LinearMomentum = MeshMap["cube"]->PhysicRigidBody->Mass * glm::vec3(0.0f, -0.5f, 0.0f);
-	MeshMap["cube"]->PhysicRigidBody->AngularMomentum = MeshMap["cube"]->PhysicRigidBody->Mass * glm::vec3(0.1f, 0.1f, 0);
-
-	MeshMap["tetra"]->PhysicRigidBody->LinearMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0.0f, -0.1f, 0.0f);
+	MeshMap["tetra"]->PhysicRigidBody->LinearMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0.0f, 0.3f, 0.0f);
 	MeshMap["tetra"]->PhysicRigidBody->AngularMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0, 0.1f, 0.1f);
-	*/
-
-	MeshMap["floor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("floor.obj"));
-	MeshMap["floor"]->PhysicRigidBody->SetState(
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::identity<glm::quat>(),
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, 0.0f)
-	);
-
+	MeshMap["tetra"]->PhysicRigidBody->SetForceFunction(GravityForce);
+	
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube"]->PhysicRigidBody->SetState(
-		glm::vec3(0.0f, 5.0f, 0.0f),
+		glm::vec3(-3.0f, 2.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, -1.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
 	);
+	MeshMap["cube"]->PhysicRigidBody->LinearMomentum = MeshMap["cube"]->PhysicRigidBody->Mass * glm::vec3(0.3f, 0.1f, 0.0f);
+	MeshMap["cube"]->PhysicRigidBody->AngularMomentum = MeshMap["cube"]->PhysicRigidBody->Mass * glm::vec3(0.0f, 0.0f, 0.0f);
+	MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
+	
+	MeshMap["bigfloor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("bigfloor.obj"));
+	MeshMap["bigfloor"]->PhysicRigidBody->SetState(
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::identity<glm::quat>(),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 0.0f)
+	);
+	MeshMap["bigfloor"]->PhysicRigidBody->SetImmovable(true);
+
+	
 
 	for (std::pair<std::string, Mesh3D*> p : MeshMap)
 	{

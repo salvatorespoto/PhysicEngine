@@ -49,7 +49,7 @@ namespace PhysicEngine
 	 * @param p0 the first polyhedron
 	 * @param p1 the second polyhedron
 	 */
-	bool TestRigidBodyIntersect(const PhysicEngine::RigidBody& p0, const PhysicEngine::RigidBody& p1, std::vector<Contact>& outContacts);
+	std::vector<Contact> TestRigidBodyIntersect(const float currentTime, const float timeStep, PhysicEngine::RigidBody& p0, PhysicEngine::RigidBody& p1);
 
 	/** 
 	 * Compute the interval of a convex polyhedron projection onto a specifi axis
@@ -95,26 +95,26 @@ namespace PhysicEngine
 	 * @param c0 the first convex polyhedron
 	 * @param c0 the first convex polyhedron* @param
 	 */
-	void GetIntersection(const RigidBody& c0, const RigidBody& c1,
+	void GetIntersection(RigidBody& c0, RigidBody& c1,
 		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts);
 	
 
 	/**
 	 * 
 	 */
-	std::vector<Contact> GetEdgeEdgeIntersection(RigidBody rb0, RigidBody rb1, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1);
+	std::vector<Contact> GetEdgeEdgeIntersection(RigidBody& rb0, RigidBody& rb1, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1);
 
 
 	/**
 	 *
 	 */
-	std::vector<Contact> GetEdgeFacesIntersection(RigidBody rb0, RigidBody rb1, const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges);
+	std::vector<Contact> GetEdgeFacesIntersection(RigidBody& rb0, RigidBody& rb1, const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges);
 
 
 	/**
 	 *
 	 */
-	std::vector<Contact> GetCoplanarFaceFaceIntersection(RigidBody rb0, RigidBody rb1, std::vector<Object3D> f0, std::vector<Object3D> f1);
+	std::vector<Contact> GetCoplanarFaceFaceIntersection(RigidBody& rb0, RigidBody& rb1, std::vector<Object3D> f0, std::vector<Object3D> f1);
 }
 
 #endif

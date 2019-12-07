@@ -32,6 +32,7 @@ namespace PhysicEngine
 		return b[0] && b[1] && b[2];
 	}
 
+	const int T_MAX_INTERSECTION_PREDICTION = 1.0f / 15.0f;
 
 	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance)
 	{
@@ -122,11 +123,13 @@ namespace PhysicEngine
 	}
 
 
-	bool TestRigidBodyIntersect(const PhysicEngine::RigidBody& c0, const PhysicEngine::RigidBody& c1, std::vector<Contact>& outContacts)
+	std::vector<Contact> TestRigidBodyIntersect(const float currentTime, const float timeStep, PhysicEngine::RigidBody& c0, PhysicEngine::RigidBody& c1)
 	{
 		// This algorithm is based on the separate axis theorem.
 		// For three dimensional convex polyhedra the axes to be test are the ones parallel to face normals and the ones 
 		// parallels to the cross product betwenn two objects face normals.
+
+		std::vector<Contact> outContacts;
 
 		double min0, max0, min1, max1;
 		glm::mat3 M0 = glm::mat3(c0.ModelMatrix);
@@ -136,7 +139,7 @@ namespace PhysicEngine
 		double tFirst = 0.0f;
 		double tLast = 99999999.0f;
 		int side = 0;
-		int tMax = 10;
+		float tMax = timeStep;
 
 		PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1, pCurr0, pCurr1;
 		// Test direction parallel to faces normal of c0
@@ -147,7 +150,7 @@ namespace PhysicEngine
 			ComputeRigidBodyProjectionOnAxis(c1, M0 * f.n, projectionInfo1);
 			float speed = glm::dot(v, glm::normalize(M0 * f.n));
 			if(NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
-				return false;
+				return outContacts;
 		}
 
 		// Test direction parallel to faces normal of c1
@@ -158,7 +161,7 @@ namespace PhysicEngine
 			ComputeRigidBodyProjectionOnAxis(c1, M1 * f.n, projectionInfo1);
 			float speed = glm::dot(v, glm::normalize(M1 * f.n));
 			if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast)) 
-				return false;	
+				return outContacts;
 		}
 
 		
@@ -178,7 +181,7 @@ namespace PhysicEngine
 				ComputeRigidBodyProjectionOnAxis(c1, axis, projectionInfo1);
 				float speed = glm::dot(v, glm::normalize(axis));
 				if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
-					return false;
+					return outContacts;
 			}
 		}
 		
@@ -186,7 +189,7 @@ namespace PhysicEngine
 		Object3D contactSet;
 		GetIntersection(c0, c1, pCurr0, pCurr1, side, tFirst, outContacts);
 
-		return true;
+		return outContacts;
 	}
 
 
@@ -463,7 +466,7 @@ namespace PhysicEngine
 	 * @param c0 the first convex polyhedron
 	 * @param c0 the first convex polyhedron* 
 	 */
-	void GetIntersection(const RigidBody& c0, const RigidBody& c1,
+	void GetIntersection(RigidBody& c0, RigidBody& c1,
 		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts)
 	{
 		// c0 MAX meet C1 MIN
@@ -475,16 +478,15 @@ namespace PhysicEngine
 				if (pInfo1.sMin.type == ContactSet::FACE) 
 				{
 					glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
-					Contact c = Contact
-					{
+					
+					Contact c 
+					(
 						Contact::Type::VERTEX_FACE,
 						c0,
 						c1,
 						v,
-						c1.OrientationMatrix * pInfo1.sMin.faces[0].n,
-						{ glm::vec3(0), glm::vec3(0) },
-						{ glm::vec3(0), glm::vec3(0) }
-					};
+						c1.OrientationMatrix * pInfo1.sMin.faces[0].n
+					);
 					outContacts.push_back(c);
 				}
 			}
@@ -495,16 +497,14 @@ namespace PhysicEngine
 				if (pInfo0.sMax.type == ContactSet::FACE)
 				{
 					glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
-					Contact c = Contact
-					{
+					Contact c
+					(
 						Contact::Type::VERTEX_FACE,
 						c1,
 						c0,
 						v,
-						c0.OrientationMatrix * pInfo0.sMax.faces[0].n,
-						{ glm::vec3(0), glm::vec3(0) },
-						{ glm::vec3(0), glm::vec3(0) }
-					};
+						c0.OrientationMatrix * pInfo0.sMax.faces[0].n
+					);
 					outContacts.push_back(c);
 				}
 			}
@@ -696,16 +696,14 @@ namespace PhysicEngine
 				if (pInfo0.sMin.type == ContactSet::FACE)
 				{
 					glm::vec3 v = (c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.vertices[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst);
-					Contact c = Contact
-					{
+					Contact c
+					(
 						Contact::Type::VERTEX_FACE,
 						c1,
 						c0,
 						v,
-						c1.OrientationMatrix * pInfo0.sMax.faces[0].n,
-						{ glm::vec3(0), glm::vec3(0) },
-						{ glm::vec3(0), glm::vec3(0) }
-					};
+						c0.OrientationMatrix * pInfo0.sMax.faces[0].n
+					);
 					outContacts.push_back(c);
 				}
 			}
@@ -716,16 +714,14 @@ namespace PhysicEngine
 				if (pInfo1.sMax.type == ContactSet::FACE) 
 				{
 					glm::vec3 v = (c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.vertices[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst);
-					Contact c = Contact
-					{
+					Contact c
+					(
 						Contact::Type::VERTEX_FACE,
 						c0,
 						c1,
 						v,
-						c1.OrientationMatrix * pInfo1.sMax.faces[0].n,
-						{ glm::vec3(0), glm::vec3(0) },
-						{ glm::vec3(0), glm::vec3(0) }
-					};
+						c1.OrientationMatrix * pInfo1.sMax.faces[0].n
+					);
 					outContacts.push_back(c);
 				}
 			}
@@ -910,7 +906,7 @@ namespace PhysicEngine
 	}
 
 
-	std::vector<Contact> GetEdgeEdgeIntersection(RigidBody rb0, RigidBody rb1, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1)
+	std::vector<Contact> GetEdgeEdgeIntersection(RigidBody& rb0, RigidBody& rb1, const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& q0, const glm::vec3& q1)
 	{
 		std::vector<Contact> contacts;
 
@@ -1015,17 +1011,20 @@ namespace PhysicEngine
 			if((lp0 <= pI && pI <= lp1) && (lq0 <= qI && qI <= lq1))
 			{
 				//outIntersection.type = Object3D::VERTEX;
+				glm::vec3 edgeA[2] = { p0, p1 };
+				glm::vec3 edgeB[2] = { q0, q1 };
+
 				contacts.push_back(
 					Contact
-					{
+					(
 						Contact::Type::EDGE_EDGE,
 						rb0,
 						rb1,
 						i,
 						glm::vec3(),
-						{ p0, p1},
-						{ q0, q1}
-					}
+						edgeA,
+						edgeB
+					)
 				);
 				return contacts;
 			}
@@ -1036,7 +1035,7 @@ namespace PhysicEngine
 	}
 
 
-	std::vector<Contact> GetEdgeFacesIntersection(RigidBody rb0, RigidBody rb1, const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges)
+	std::vector<Contact> GetEdgeFacesIntersection(RigidBody& rb0, RigidBody& rb1, const glm::vec3 p0, const glm::vec3 p1, std::vector<Object3D> edges)
 	{
 		std::vector<Contact> contacts;
 
@@ -1079,27 +1078,23 @@ namespace PhysicEngine
 			//inside = false;
 			if(inside) {
 				
-				Contact c0 = Contact
-				{
+				Contact c0 
+				(
 					Contact::Type::VERTEX_FACE,
 					rb0,
 					rb1,
 					p0,
-					faceNormal,
-					{ glm::vec3(0), glm::vec3(0) },
-					{ glm::vec3(0), glm::vec3(0) }
-				};
+					faceNormal
+				);
 			
-				Contact c1 = Contact
-				{
+				Contact c1 
+				(
 					Contact::Type::VERTEX_FACE,
 					rb0,
 					rb1,
 					p1,
-					faceNormal,
-					{ glm::vec3(0), glm::vec3(0) },
-					{ glm::vec3(0), glm::vec3(0) }
-				};
+					faceNormal
+				);
 
 				contacts.push_back(c0);
 				contacts.push_back(c1);
@@ -1111,15 +1106,13 @@ namespace PhysicEngine
 		{
 			contacts.push_back(
 				Contact
-				{
+				(
 					Contact::Type::VERTEX_FACE,
 					rb0,
 					rb1,
 					insidePoint,
-					faceNormal,
-					{ glm::vec3(0), glm::vec3(0) },
-					{ glm::vec3(0), glm::vec3(0) }
-				});
+					faceNormal
+				));
 		}
 
 		// If intersection is 2 the points are outside the face
@@ -1139,7 +1132,7 @@ namespace PhysicEngine
 
 
 
-	std::vector<Contact> GetCoplanarFaceFaceIntersection(RigidBody rb0, RigidBody rb1, std::vector<Object3D> edges0, std::vector<Object3D> edges1)
+	std::vector<Contact> GetCoplanarFaceFaceIntersection(RigidBody& rb0, RigidBody& rb1, std::vector<Object3D> edges0, std::vector<Object3D> edges1)
 	{
 		std::vector<Contact> contacts;
 
@@ -1176,29 +1169,25 @@ namespace PhysicEngine
 
 			if (insideE00) {
 				Contact c
-					{
+					(
 						Contact::Type::VERTEX_FACE,
 						rb1,
 						rb0,
 						e.vertices[0],
-						face0Normal,
-						{ glm::vec3(0), glm::vec3(0) },
-						{ glm::vec3(0), glm::vec3(0) }
-					};
+						face0Normal
+					);
 				if (std::find(contacts.begin(), contacts.end(), c) == contacts.end()) contacts.push_back(c);
 			}
 
 			if (insideE01) {
 				Contact c
-					{
+					(
 						Contact::Type::VERTEX_FACE,
 						rb1,
 						rb0,
 						e.vertices[1],
-						face0Normal,
-						{ glm::vec3(0), glm::vec3(0) },
-						{ glm::vec3(0), glm::vec3(0) }
-					};
+						face0Normal
+					);
 				if (std::find(contacts.begin(), contacts.end(), c) == contacts.end()) contacts.push_back(c);
 			}
 		}

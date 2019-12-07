@@ -24,7 +24,7 @@ namespace PhysicEngine
 	/**
 	 * Coefficient of restitution in colliding contact
 	 */
-	const float RESTITUTION_COEFFICIENT = 0.8f;
+	const float RESTITUTION_COEFFICIENT = 1.0f;
 
 
 	/**
@@ -38,14 +38,20 @@ namespace PhysicEngine
 													// and the face is from the RigidBody B
 
 		Type type = Type::VERTEX_FACE;									// The type of this contact
-		RigidBody rb0 = RigidBody();								// First RigidBody involved in contact
-		RigidBody rb1 = RigidBody();								// Second RigidBody involved in contact
+		RigidBody& rb0;								// First RigidBody involved in contact
+		RigidBody& rb1;								// Second RigidBody involved in contact
 		glm::vec3 point = glm::vec3(0);							// The contact point between the two RigidBody
 		glm::vec3 normal = glm::vec3(0);							// If it is a VERTEX_FACE contact, holds the normal to the face
 		glm::vec3 edgeA[2] = { glm::vec3(0), glm::vec3(0) };							// If it is an EDGE_EDGE contact the edge from the RigidBody A, stores the two
 													// edge vertices
 		glm::vec3 edgeB[2] = { glm::vec3(0), glm::vec3(0) };							// If it is an EDGE_EDGE contact the edge from the RigidBody B, stores the two
 													// edge vertices
+
+		Contact(Contact::Type type, RigidBody& rb0, RigidBody& rb1, glm::vec3 point, glm::vec3 normal)
+			: type(type), rb0(rb0), rb1(rb1), point(point), normal(normal) {};
+
+		Contact(Contact::Type type, RigidBody& rb0, RigidBody& rb1, glm::vec3 point, glm::vec3 normal, glm::vec3 edgeA[2], glm::vec3 edgeB[2]) 
+			: type(type), rb0(rb0), rb1(rb1), point(point), normal(normal), edgeA{ edgeA[0], edgeA[1]}, edgeB{ edgeB[0], edgeB[1] } {}
 
 		bool operator ==(Contact c)
 		{

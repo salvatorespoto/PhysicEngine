@@ -41,6 +41,7 @@ namespace PhysicEngine
 		void Tick()
 		{
 			DetectCollisions();
+			ProcessCollsions();
 			Update();
 		}
 
@@ -71,16 +72,29 @@ namespace PhysicEngine
 				for (RigidBody* rbB : Objects)
 				{
 					if (rbA == rbB) break;
-
-					if (TestRigidBodyIntersect(*rbA, *rbB, Contacts))
+					std::vector<Contact> cs = TestRigidBodyIntersect(currentTime, timeStep, *rbA, *rbB);
+					if (!cs.empty())
 					{
 						rbA->IsColliding = true;
 						rbB->IsColliding = true;
-					};
+						for(Contact c : cs) Contacts.push_back(c);
+					}
 				}
 			}
 		}
 
+		void ProcessCollsions() 
+		{
+			for (Contact c : Contacts)
+			{
+				if(c.type == Contact::Type::VERTEX_FACE) ProcessCollidingContact(c.rb0, c.rb1, c.point, c.normal);
+				else if (c.type == Contact::Type::EDGE_EDGE)
+				{
+					ProcessCollidingContact(c.rb0, c.rb1, c.point,
+						glm::normalize(glm::cross(c.edgeA[1] - c.edgeA[0], c.edgeB[1] - c.edgeB[0])));
+				}
+			}
+		}
 
 		void Update() 
 		{

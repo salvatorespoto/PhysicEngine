@@ -18,11 +18,11 @@ namespace PhysicEngine
 
 		// The formula formula to compute the resulting impulsive force is quite complex,
 		// so it is breaked down into numerator and denumerator
-		float numerator = -(1 - RESTITUTION_COEFFICIENT) * (
+		float numerator = -(1 + RESTITUTION_COEFFICIENT) * (
 			glm::dot(normal, rbA.LinearVelocity - rbB.LinearVelocity) +
 			glm::dot(rbA.AngularVelocity, kA) -
 			glm::dot(rbB.AngularVelocity, kB));
-		float denominator = rbA.InvertedMass + rbB.InvertedMass + glm::dot(kA, uB) + glm::dot(kA, uB);
+		float denominator = rbA.InvertedMass + rbB.InvertedMass + glm::dot(kA, uA) + glm::dot(kB, uB);
 		float impulseModule = numerator / denominator;
 
 		glm::vec3 impulse = impulseModule * normal;
@@ -30,6 +30,8 @@ namespace PhysicEngine
 		// 2. Apply inpulse force to bodies to change linear and angular momentum
 		rbA.LinearMomentum += impulse;
 		rbB.LinearMomentum -= impulse;
+		rbA.AngularMomentum += impulseModule * kA;
+		rbB.AngularMomentum -= impulseModule * kB;
 
 		// Compute derived quantities: linear velocity and angular velocity
 		rbA.LinearVelocity = rbA.LinearMomentum * rbA.InvertedMass;
