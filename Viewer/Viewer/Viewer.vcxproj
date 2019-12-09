@@ -173,6 +173,7 @@
     <ClCompile Include="include\PhysicEngine\force.cpp" />
     <ClCompile Include="include\PhysicEngine\Functions.cpp" />
     <ClCompile Include="include\PhysicEngine\LPCSolver.cpp" />
+    <ClCompile Include="include\PhysicEngine\Memory.cpp" />
     <ClCompile Include="Mesh3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="include\PhysicEngine\RigidBody.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="include\PhysicEngine\DataTypes.h" />
     <ClInclude Include="include\tini_obj_loader.h" />
     <ClInclude Include="include\PhysicEngine\LPCSolver.h" />
+    <ClInclude Include="include\PhysicEngine\Memory.h" />
     <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="include\PhysicEngine\RigidBody.h" />

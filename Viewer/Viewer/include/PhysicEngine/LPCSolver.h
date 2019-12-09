@@ -1,31 +1,37 @@
 #pragma once
 
-#include <string>;
-#include <unordered_set>;
+#include <vector>
+#include "Memory.h"
+
 
 /**
  * An entry in the dictionary, i.e. an equation
  */
-template <int N>
-class TEquation
+class Equation
 {
 
 public:
 	
-	char v;			// The basic variable of this equation, '0' means that nothing has been assigned to this equation yet
-	int i;			// The index of the basic variable 	
-	float e[N+1];	// The PERTURBATION added to the coefficient to avoid DEGENERANCY, e[0] is the constant term of the equation
-	float w[N+1];	// The coefficients of the w variables in the equation, note that w[0] is never used
-	float z[N+1];	// The coefficients of the z variables in the equation
-	
+	char v;								// The basic variable of this equation, '0' means that nothing has been assigned to this equation yet
+	int i;								// The index of the basic variable 	
+	float *e;		// The PERTURBATION added to the coefficient to avoid DEGENERANCY, e[0] is the constant term of the equation
+	float* w;		// The coefficients of the w variables in the equation, note that w[0] is never used
+	float* z;		// The coefficients of the z variables in the equation
+	int size;							// The size of the equation, i.e the variables subscripts goes from 0 to size included
+
 
 	/**
 	 * Constructor
+	 *
+	 * @param size the size of equation, i.e the variable subscripts goes from 0 to size
 	 */
-	TEquation<N> () 
+	Equation (int size) : size(size)
 	{
-		i = 0;
-		for(int i=0; i<=N; i++) 
+		e = new float[size + 1];
+		w = new float[size + 1];
+		z = new float[size + 1];
+		
+		for(int i=0; i<=size; i++) 
 		{
 			e[i] = 0;
 			w[i] = 0;
@@ -36,10 +42,12 @@ public:
 
 	/**
 	 * Multiply the equation by a value
+	 *
+	 * @param x the value for which to multiply the equation
 	 */
 	void MultiplyBy(float x)
 	{
-		for (int i=0; i<=N; i++)
+		for (int i=0; i<=size; i++)
 		{
 			e[i] *= x;
 			w[i] *= x;
@@ -50,17 +58,21 @@ public:
 
 	/**
 	 * Compute the constant value of this equation (i.e. the sum of all e[] elements)
+	 *
+	 * @return the constant polynomial value
 	 */
 	float E() 
 	{
 		float s = 0;
-		for (int i = 0; i <= N; i++) s += e[i];
+		for (int i = 0; i <= size; i++) s += e[i];
 		return s;
 	}
 
 
 	/**
-	 * Return the ratio between the constant term E and the variable v[i]
+	 * Compute the ratio between the constant term E and the variable _v[_i]
+	 *
+	 * @return the ration between the constant polynomial and _v[_i]
 	 */
 	float GetEViRatio(const char _v, unsigned int _i)
 	{
@@ -71,6 +83,9 @@ public:
 
 	/**
 	 * Solve the equation for the non basic variable _v
+	 *
+	 * @param _v the name of the basic variable (i.e. 'w' or 'z')
+	 * @param _i the indez of the basic variable
 	 */
 	void SolveFor(const char _v, unsigned int _i)
 	{
@@ -101,76 +116,76 @@ public:
 	
 	/**
 	 * Replace a basic variable an equation where it is a non basic variable
+	 *
+	 * @param eq the equation that will be replaced to the variable eq.v[eq.i]
 	 */
-	void ReplaceVariable(const TEquation<N> eq)
+	void ReplaceVariable(const Equation* eq)
 	{
 		float c = 0;
-		if (eq.v == 'w')
+		if (eq->v == 'w')
 		{
-			if (w[eq.i] == 0) return;
-			c = w[eq.i];
+			if (w[eq->i] == 0) return;
+			c = w[eq->i];
 		}
 
-		if (eq.v == 'z')
+		if (eq->v == 'z')
 		{
-			if (z[eq.i] == 0) return;
-			c = z[eq.i];
+			if (z[eq->i] == 0) return;
+			c = z[eq->i];
 		}
 
-		for(int k=0; k<=N; k++) 
+		for(int k=0; k<=size; k++)
 		{
-			e[k] += c*eq.e[k];
-			w[k] += c*eq.w[k];
-			z[k] += c*eq.z[k];
+			e[k] += c*eq->e[k];
+			w[k] += c*eq->w[k];
+			z[k] += c*eq->z[k];
 		}
 
-		if (eq.v == 'w') w[eq.i] = 0;
-		else z[eq.i] = 0;
+		if (eq->v == 'w') w[eq->i] = 0;
+		else z[eq->i] = 0;
 	}
-	
 };
 
 
 
 /**
- * Implements the Lemke algorithm to solve Linear Complementary Problem w = q + Mz
+ * This class Implements the Lemke algorithm to solve Linear Complementary Problem w = q + Mz, w ° z = 0
+ * It solves also the minimization problem for the quadratic function g(x) = |Ax+b|^2, Ax+b > 0, Ax+b < c, 
+ * converting it to a Linear Complementary Problem.
  */
-template <int N>
 class LPCSolver 
 {
 public:
 
-	typedef TEquation<N> Equation;
+	/**
+	 * The dimension of the matrix and vectors
+	 */
+	int N;
 
 	/**
 	 * Matrix M
 	 */
-	float (&M)[N][N];
+	float** M;
 
 	/**
 	 * Vector w
 	 */
-	float(&w)[N];
+	float* w;
 
 	/**
 	 * Vector q
 	 */
-	float(&q)[N];
+	float* q;
 
 	/**
 	 * Vector z
 	 */
-	float(&z)[N];
-
-	/**
-	 * Vector z
-	 */
-	float z0[N];
+	float* z;
 
 	/**
 	 *	The dictionary
 	 */
-	Equation Dictionary[N];
+	Equation **Dictionary;
 
 	/**
 	 * The PERTURBATION introduced to avoid DEGENERANCY
@@ -180,14 +195,23 @@ public:
 	/**
 	 * The precomputed powers epsilon^k for k=0..N
 	 */
-	float(epsPow)[N];
+	float *epsPow;
 	
+	/**
+	 * Minimimze the quadratic function x^t S x + cx + k where S is a symmetric matrix, c a vector a k a scalar, 
+	 * subject to the constraing g(x) = (Ax - b, -x) <= 0. 
+	 * /
+	LPCSolver(unsigned size, float(&S)[size][N], float(&c)[N], float(&b)[N], float k, bool& hasSolution) : N(size), M(M), w(w), q(q), z(z)
+	{
+	
+	}
+	*/
+
 	/**
 	 * Constructor
 	 */
-	LPCSolver(float(&w)[N], float(&M)[N][N], float(&q)[N], float(&z)[N], bool& hasSolution) : M(M), w(w), q(q), z(z)
+	LPCSolver(int size, float** _M, float* _q, float* _w, float* _z, bool& hasSolution) : N(size), M(_M), w(_w), q(_q), z(_z)
 	{
-		
 		if (HasTrivialSolution())
 		{
 			hasSolution = true;
@@ -251,10 +275,11 @@ public:
 			z[i] = 0;
 		}
 		
-		for(Equation eq : Dictionary) 
+		for(int i=0; i <N;  i++)
 		{
+			Equation eq = *Dictionary[i];
 			if (eq.v == 'w') w[eq.i-1] = eq.e[0];
-			if (eq.v == 'z') z[eq.i-1] = eq.e[0];
+			else z[eq.i-1] = eq.e[0];
 		}
 
 		hasSolution = true;
@@ -269,9 +294,10 @@ public:
 	 */
 	void ComputePerturbations()
 	{
+		epsPow = new float[N];
 		for(int i=0; i<=N; i++) 
 		{
-			epsPow[i] = pow(epsilon, i);
+			epsPow[i] = powf(epsilon, (float)i);
 		}
 	}
 
@@ -304,27 +330,29 @@ public:
 	 */
 	void InitDictionary() 
 	{
+		Dictionary = new Equation*[N];
+
 		for(int i=1; i<=N; i++) 
 		{
-			Equation eq;
+			Equation* eq = new Equation(N);
 
 			// At the beginning, all the BASIC VARIABLES are w_i
-			eq.v = 'w';
-			eq.i = i;
-			eq.w[i] = 0; 
+			eq->v = 'w';
+			eq->i = i;
+			eq->w[i] = 0;
 			
 			// Set up constant terms and perturbations
-			eq.e[0] = q[i - 1];
-			eq.e[i] = epsPow[i];
+			eq->e[0] = q[i - 1];
+			eq->e[i] = epsPow[i];
 			
 			// At the beginning, the z[0] auxiliary variable is added to all equations 
-			eq.z[0] = 1;
+			eq->z[0] = 1;
 
 			// Add the coefficients for the NON BASIC VARIABLES z_j, j > 1 variables
 			for (int j = 1; j <= N; j++) 
 			{
 				// Const coefficients
-				eq.z[j] = M[i-1][j-1] * 1;
+				eq->z[j] = M[i-1][j-1] * 1;
 			}
 
 			// Add the equation to the dictionary
@@ -348,12 +376,13 @@ public:
 		// Special case for z[0], the equation with the less c / z[0] ratio
 		if(v == 'z' && i == 0) 
 		{
-			for (Equation& eq : Dictionary)
+			for (int i=0; i<N; i++)
 			{
-				float cv = eq.GetEViRatio(v, i);
+				Equation* eq = Dictionary[i];
+				float cv = eq->GetEViRatio(v, i);
 				if (cv < ratio)
 				{
-					result = &eq;
+					result = eq;
 					ratio = cv;
 				}
 			}
@@ -363,15 +392,16 @@ public:
 		// and the smallest C / (-v[i]) ratio
 		else
 		{
-			for (Equation& eq : Dictionary)
+			for (int j = 0; j < N; j++)
 			{
-				if (v == 'w') if (eq.w[i] >= 0) continue;
-				if (v == 'z') if (eq.z[i] >= 0) continue;
+				Equation* eq = Dictionary[j];
+				if (v == 'w') if (eq->w[i] >= 0) continue;
+				if (v == 'z') if (eq->z[i] >= 0) continue;
 
-				float cv = -eq.GetEViRatio(v, i);
+				float cv = -eq->GetEViRatio(v, i);
 				if (cv < ratio)
 				{
-					result = &eq;
+					result = eq;
 					ratio = cv;
 				}
 			}
@@ -386,9 +416,10 @@ public:
 	 */
 	void ReplaceVariableInDictionary(Equation* eq) 
 	{
-		for (Equation& neq : Dictionary)
+		for (int j = 0; j < N; j++)
 		{
-			neq.ReplaceVariable(*eq);
+			Equation* neq = Dictionary[j];
+			neq->ReplaceVariable(eq);
 		}
 	}
 	
@@ -400,9 +431,10 @@ public:
 	 */
 	bool IsZ0BasicVariable()
 	{
-		for (Equation eq : Dictionary)
+		for (int i=0; i < N; i++)
 		{
-			if (eq.v == 'z' && eq.i == 0) return true;
+			Equation* eq = Dictionary[i];
+			if (eq->v == 'z' && eq->i == 0) return true;
 		}
 		return false;
 	}

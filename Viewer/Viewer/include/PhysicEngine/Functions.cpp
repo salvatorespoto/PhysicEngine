@@ -1021,7 +1021,7 @@ namespace PhysicEngine
 						rb0,
 						rb1,
 						i,
-						glm::vec3(),
+						glm::normalize(glm::cross(edgeA[1] - edgeA[0], edgeB[1] - edgeB[0])),
 						edgeA,
 						edgeB
 					)
