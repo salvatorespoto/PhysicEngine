@@ -1,12 +1,10 @@
 // Copyright 2019 Salvatore Spoto
 
 #include "ViewerApp.h"
-#include "include/PhysicEngine/Functions.h"
-#include "include/PhysicEngine/QuadraticSolver.h"
-#include "include/PhysicEngine/Memory.h"
+
 
 /** 
- * Application entry point 
+ * Viewer application entry point 
  */
 int main() 
 {
