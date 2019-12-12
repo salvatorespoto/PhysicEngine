@@ -177,6 +177,7 @@
     <ClCompile Include="Mesh3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="include\PhysicEngine\RigidBody.cpp" />
+    <ClCompile Include="include\PhysicEngine\QuadraticSolver.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="ViewerApp.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="include\PhysicEngine\LPCSolver.h" />
     <ClInclude Include="include\PhysicEngine\Memory.h" />
     <ClInclude Include="Mesh3D.h" />
+    <ClInclude Include="include\PhysicEngine\QuadraticSolver.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="include\PhysicEngine\RigidBody.h" />
     <ClInclude Include="Shader.h" />

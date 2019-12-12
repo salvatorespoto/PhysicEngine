@@ -9,7 +9,7 @@ namespace PhysicEngine
 	public:
 
 		/**
-		 * Allocate a nxm matrix
+		 * Allocate a nxm matrix, matrix is in row-major order
 		 *
 		 */
 		static float** CreateMatrix(int n, int m)

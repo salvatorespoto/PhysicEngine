@@ -27,6 +27,9 @@ public:
 	 */
 	Equation (int size) : size(size)
 	{
+		v = ' ';
+		i = '-1';
+
 		e = new float[size + 1];
 		w = new float[size + 1];
 		z = new float[size + 1];
@@ -197,15 +200,6 @@ public:
 	 */
 	float *epsPow;
 	
-	/**
-	 * Minimimze the quadratic function x^t S x + cx + k where S is a symmetric matrix, c a vector a k a scalar, 
-	 * subject to the constraing g(x) = (Ax - b, -x) <= 0. 
-	 * /
-	LPCSolver(unsigned size, float(&S)[size][N], float(&c)[N], float(&b)[N], float k, bool& hasSolution) : N(size), M(M), w(w), q(q), z(z)
-	{
-	
-	}
-	*/
 
 	/**
 	 * Constructor
