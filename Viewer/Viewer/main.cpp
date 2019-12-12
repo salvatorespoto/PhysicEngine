@@ -10,7 +10,6 @@
  */
 int main() 
 {
-	
 	try 
 	{
 		ViewerApp::GetInstance().Run();

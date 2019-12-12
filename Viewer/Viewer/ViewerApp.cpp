@@ -317,7 +317,7 @@ void ViewerApp::SetupScene()
 	physicEngine.SetStartingTime(0);
 	physicEngine.SetDeltaTime(1.0f / 30.0f);
 
-	
+	/*
 	MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
 	MeshMap["suzanne"]->PhysicRigidBody->SetState(
 		glm::vec3(0.0f, 7.0f, 0.0f),
@@ -340,7 +340,7 @@ void ViewerApp::SetupScene()
 	MeshMap["tetra"]->PhysicRigidBody->LinearMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0.0f, 0.3f, 0.0f);
 	MeshMap["tetra"]->PhysicRigidBody->AngularMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0, 0.1f, 0.1f);
 	MeshMap["tetra"]->PhysicRigidBody->SetForceFunction(GravityForce);
-	
+	*/
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	MeshMap["cube"]->PhysicRigidBody->SetState(
 		glm::vec3(-3.0f, 2.0f, 0.0f),

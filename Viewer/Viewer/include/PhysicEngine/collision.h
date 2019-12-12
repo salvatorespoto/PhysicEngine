@@ -16,6 +16,8 @@
 #include "DataTypes.h"
 #include "RigidBody.h"
 #include "force.h"
+#include "Memory.h"
+#include "QuadraticSolver.h"
 
 
 namespace PhysicEngine
@@ -74,5 +76,18 @@ namespace PhysicEngine
 	 * @param	normal			the collding face normal
 	 */
 	void ProcessCollidingContact(RigidBody& rbA, RigidBody& rbB, const glm::vec3& collidingPoint, const glm::vec3& normal);
+
+
+
+
+
+	void DoCollisionResponse(float t, float dt, std::vector<Contact> contacts, std::vector<RigidBody*> bodies);
+	void DoMotion(float t, float dt, std::vector<Contact> contacts, float* restingMagnitute, std::vector<RigidBody*> bodies);
+	void Minimize(int N, float** M, float* preImpulseVelocities, float* postImpulseVel, float* impulsesMagnitude);
+	void DoImpulse(std::vector<Contact> contacts, float* impulsesMagnitude);
+	void ComputingRestingContactVector(std::vector<Contact> contacts, float* b);
+	void ComputeLCPMatrix(std::vector<Contact> contacts, float** M, int N);
+
+	float* ComputePreInpulseVelocity(std::vector<Contact> contacts);
 
 }

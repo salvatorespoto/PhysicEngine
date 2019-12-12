@@ -13,7 +13,7 @@
 
 #include "DataTypes.h"
 #include "RigidBody.h"
-#include "Collision.h"
+#include "collision.h"
 
 
 namespace PhysicEngine
@@ -49,7 +49,7 @@ namespace PhysicEngine
 	 * @param p0 the first polyhedron
 	 * @param p1 the second polyhedron
 	 */
-	std::vector<Contact> TestRigidBodyIntersect(const float currentTime, const float timeStep, PhysicEngine::RigidBody& p0, PhysicEngine::RigidBody& p1);
+	std::vector<Contact> TestRigidBodyIntersect(const float currentTime, const float timeStep, RigidBody& p0, RigidBody& p1);
 
 	/** 
 	 * Compute the interval of a convex polyhedron projection onto a specifi axis
@@ -63,7 +63,7 @@ namespace PhysicEngine
 	 * @param outMin the output minimum value projection
 	 * @param outMax the output minimum value projection
 	 */
-	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, double& outMin, double& outMax);
+	void ComputeRigidBodyProjectionOnAxis(const RigidBody& c0, const glm::vec3& axis, double& outMin, double& outMax);
 
 
 	/**

@@ -91,11 +91,23 @@ namespace PhysicEngine
 		glm::vec3 AngularVelocity;
 
 
-		/* Forces acting on the object */
+		/* Forces function acting on the object */
 		ForceFunction Force;
 		
-		/* Torque acting on the object */
+		/* Torque function acting on the object */
 		TorqueFunction Torque;
+
+		/** The external force applyed to the object */
+		glm::vec3 ExternalForce;
+
+		/** The external torque applyed to the object */
+		glm::vec3 ExternalTorque;
+
+		/** The internal force applyed to the object */
+		glm::vec3 InternalForce;
+
+		/** The external torque applyed to the object */
+		glm::vec3 InternalTorque;
 
 		bool IsColliding = false;
 
@@ -128,9 +140,6 @@ namespace PhysicEngine
 			InvertedIntertiaTensor = glm::mat3(0.0f);
 		}
 
-		/** */
-		void GetFaceFromEdges(glm::ivec2 edges[3]) {}
-
 		/** 
 		 * Get the PRIMARY STATE of the rigid body 
 		 */
@@ -150,6 +159,23 @@ namespace PhysicEngine
 		 * Set the force function acting on the rigid body
 		 */
 		void SetTorqueFunction(TorqueFunction torque);
+
+		/**
+		 * Add an external force
+		 */
+		void AddInternalForce(glm::vec3 force) 
+		{
+			InternalForce += force;
+		}
+
+		/**
+		 * Add an external torque
+		 */
+		void AddInternalTorque(glm::vec3 torque) 
+		{
+			InternalTorque += torque;
+		}
+
 
 		/** 
 		 * Update the rigid body STATE given. 

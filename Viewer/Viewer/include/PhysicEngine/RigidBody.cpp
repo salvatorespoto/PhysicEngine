@@ -336,8 +336,8 @@ void RigidBody::UpdateState(float t, float dt)
 	// k1 = F(t, State_0) 
 	glm::vec3 k1_X = LinearVelocity;
 	glm::quat k1_Q = 0.5f * (glm::quat(0.0f, AngularVelocity) * OrientationQuaternion);
-	glm::vec3 k1_P = Force(t, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
-	glm::vec3 k1_L = Torque(t, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
+	glm::vec3 k1_P = InternalForce + ExternalForce;
+	glm::vec3 k1_L = InternalTorque + ExternalTorque;
 
 	// State_1 = State_0 + dt/2 * k1
 	Xn = Position + halfdt * k1_X;
@@ -352,6 +352,11 @@ void RigidBody::UpdateState(float t, float dt)
 	glm::vec3 k2_P = Force(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 	glm::vec3 k2_L = Torque(t + halfdt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 
+	// Set the internal torque and force (contact forces) to zero becouse we take into account
+	// contact force only at the current step. The following steps of the Runge-Kutta methods are 
+	// ahead of this thime and contact forces do not exists anymore (maybe :))
+	InternalForce = InternalTorque = glm::vec3(0);
+	
 	// State_2 = State_1 + dt/2 * k2
 	Xn = Position + halfdt * k2_X;
 	Qn = OrientationQuaternion + halfdt * k2_Q;
@@ -389,6 +394,10 @@ void RigidBody::UpdateState(float t, float dt)
 		OrientationMatrix, LinearVelocity, AngularVelocity);
 	
 	ComputeModelMatrix();
+
+	// Update exteranl force and torque
+	ExternalForce = Force(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	ExternalTorque = Torque(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 }
 
 
@@ -434,12 +443,14 @@ void RigidBody::SetState(const glm::vec3& position, const glm::quat& orientation
 void RigidBody::SetForceFunction(ForceFunction force) 
 {
 	Force = force;
+	ExternalForce = Force(0, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
 }
 
 
 void RigidBody::SetTorqueFunction(TorqueFunction torque) 
 {
 	Torque = torque;
+	ExternalTorque = Torque(0, Mass, Position, OrientationQuaternion, LinearMomentum, AngularMomentum, OrientationMatrix, LinearVelocity, AngularVelocity);
 }
 
 

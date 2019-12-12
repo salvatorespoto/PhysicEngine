@@ -6,6 +6,8 @@
 #include "DataTypes.h"
 #include "Functions.h"
 #include "RigidBody.h"
+#include "collision.h"
+
 
 /** The phisic engine */
 namespace PhysicEngine
@@ -85,15 +87,13 @@ namespace PhysicEngine
 
 		void ProcessCollsions() 
 		{
-			for (Contact c : Contacts)
+			if(Contacts.size() > 0) DoCollisionResponse(currentTime, timeStep,  Contacts, Objects);
+
+			/*for (Contact c : Contacts)
+
 			{
-				if(c.type == Contact::Type::VERTEX_FACE) ProcessCollidingContact(c.rb0, c.rb1, c.point, c.normal);
-				else if (c.type == Contact::Type::EDGE_EDGE)
-				{
-					ProcessCollidingContact(c.rb0, c.rb1, c.point,
-						glm::normalize(glm::cross(c.edgeA[1] - c.edgeA[0], c.edgeB[1] - c.edgeB[0])));
-				}
-			}
+				//ProcessCollidingContact(c.rb0, c.rb1, c.point, c.normal);
+			}*/
 		}
 
 		void Update() 
