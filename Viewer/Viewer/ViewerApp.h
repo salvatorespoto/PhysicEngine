@@ -39,57 +39,67 @@
 #include "PhysicEngine/collision.h"
 
 
-/** Callback used from GLFW to report errors */
+/** 
+ * Callback used from GLFW to report errors 
+ */
 void glfwErrorCallback(int error, const char* description);
 
 
-/** This class initializes and runs the Viewer application */
+/** 
+  * This class initializes and runs the Viewer application 
+  */
 class ViewerApp {
 
 public:
 
-	/** Return the singleton instance */
+	/** 
+	 * Return the singleton instance of ViewerApp
+	 */
 	static ViewerApp& GetInstance();
 
-	/** Called on framebuffer resize */
-	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-
-	/** Run the application (allocate resources, handle inputs, enters the rendering loop, free resources on exit) */
+	/**
+	 * Run the application (allocate resources, handle inputs, enters the rendering loop, free resources on exit)
+	 */
 	void Run();
 	
-	/** Handle all the keyboard input */
+	/** 
+	 * Handle the keyboard inputs 
+	 */
 	void HandleKeyboardInput();
 
-	/** Handle all mouse input, both movement and buttons */
+	/** 
+	 * Handle mouse inputs, both movement and buttons 
+	 */
 	void HandleMouseInput();
+
+	/**
+	 * Callback Called on framebuffer resize
+	 *
+	 * This callback is registered and called when a framebuffer resize event occur
+	 * 
+	 * @param window An handle to the current window
+	 * @param width	The new framebuffer width
+	 * @param height The new framebuffer height
+	 */
+	static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 
 private:
 
-	/** Show / hide object models */
-	bool RenderModel = true;
+	bool RenderModel = true;				/**< Show / hide object models */
+	bool RenderBoundingBox = false;			/**< Show / hide object bounding boxes */			
+	bool RenderConvexHull = false;			/**< Show / hide object convex hulls */
 
-	/** Show / hide object bounding boxes */
-	bool RenderBoundingBox = false;
+	unsigned int WindowWidth;				/**< Window width */
+	unsigned int WindowHeight;				/**< Window height */
+	GLFWwindow* Window;						/**< Handle to the current window */
 
-	/** Show / hide object convex hulls */
-	bool RenderConvexHull = false;
+	int ViewportWidth;						/**< Viewport width */
+	int ViewportHeight;						/**< Viewport height */
 
-	/** Handle to the current window */
-	GLFWwindow* Window;				
+	double MouseXCoordinate = 99999.0f;		/**< Track the X mouse coordinate */
+	double MouseYCoordinate = 99999.0f;		/**< Track the Y mouse coordinate */
 
-	unsigned int WindowWidth;
-	unsigned int WindowHeight;
-	
-	/** Keep track of the X mouse input coord */
-	double MouseXCoordinate = 99999.0f;
-
-	/** Keep track of the Y mouse input coord */
-	double MouseYCoordinate = 99999.0f;
-
-	int ViewportWidth;
-	int ViewportHeight;
-	
 	GLuint ShaderProgram;
 	
 	/** All shader programs with their name */
@@ -126,8 +136,7 @@ private:
 	glm::mat4 ProjectionMatrix;
 
 
-	/** The physic engine */
-	PhysicEngine::Engine physicEngine;
+	PhysicEngine::RigidBodyEngine physicEngine;			/**< The instance of the rigid body physic engine */
 
 	/** Private constructor, ViewerApp it's a Singleton*/
 	ViewerApp();

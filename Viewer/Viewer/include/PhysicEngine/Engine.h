@@ -103,7 +103,7 @@ namespace PhysicEngine
 		void ProcessCollisions();
 
 		/** 
-		 * Update
+		 * Update the objects state 
 		 *
 		 * This function compute the updated state after a time "timeStep" from the previous
 		 * tick. 

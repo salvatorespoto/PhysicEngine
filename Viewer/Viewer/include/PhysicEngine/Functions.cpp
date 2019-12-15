@@ -32,7 +32,7 @@ namespace PhysicEngine
 		return b[0] && b[1] && b[2];
 	}
 
-	const int T_MAX_INTERSECTION_PREDICTION = 1.0f / 15.0f;
+	const int T_MAX_INTERSECTION_PREDICTION = 1.0f / 60.0f;
 
 	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance)
 	{
@@ -411,7 +411,7 @@ namespace PhysicEngine
 				pCurr0 = projectionInfo0;
 				pCurr1 = projectionInfo1;
 			}
-			if (t > tMax) return true;	// no intersection until tMax
+			if (tFirst > tMax) return true;	// no intersection until tMax
 
 			t = (projectionInfo0.max - projectionInfo1.min) / speed;	// time of the last contact, when c1 surpass c0
 			if (t < tLast) tLast = t;
@@ -432,7 +432,7 @@ namespace PhysicEngine
 				pCurr1 = projectionInfo1;
 			}
 			
-			if (t > tMax) return true;	// no intersection until tMax
+			if (tFirst > tMax) return true;	// no intersection until tMax
 
 			t = (projectionInfo0.min - projectionInfo1.max) / speed;	// time of the last contact, when c1 surpass c0
 			if (t < tLast) tLast = t;
@@ -899,7 +899,7 @@ namespace PhysicEngine
 				}
 				else if ((pInfo0.sMin.type == ContactSet::FACE))
 				{
-					outContacts = GetCoplanarFaceFaceIntersection(c0, c1, edges1, edges0);
+					outContacts = GetCoplanarFaceFaceIntersection(c1, c0, edges1, edges0);
 				}
 			}
 		}
@@ -1026,6 +1026,12 @@ namespace PhysicEngine
 						edgeB
 					)
 				);
+
+				// Select the normal as the one pointing outside the second object
+				glm::vec3 normal = glm::normalize(glm::cross(edgeA[1] - edgeA[0], edgeB[1] - edgeB[0]));
+				float dir = glm::dot(normal, glm::normalize(contacts[0].point - rb1.Position));
+				contacts[0].normal = (dir > 0) ? normal : -1.0f * normal;
+
 				return contacts;
 			}
 		}

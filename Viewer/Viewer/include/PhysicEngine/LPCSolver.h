@@ -432,4 +432,8 @@ public:
 		}
 		return false;
 	}
+
 };
+
+
+bool CheckLCPSolution(int size, float** M, float* q, float* w, float* z);

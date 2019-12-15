@@ -20,13 +20,14 @@
 #include "QuadraticSolver.h"
 
 
+
 namespace PhysicEngine
 {
 
 	/**
 	 * Coefficient of restitution in colliding contact
 	 */
-	const float RESTITUTION_COEFFICIENT = 1.0f;
+	const float RESTITUTION_COEFFICIENT = 0.1f;
 
 
 	/**
@@ -34,7 +35,9 @@ namespace PhysicEngine
 	 */
 	class Contact
 	{
+	
 	public:	
+	
 		enum class Type { VERTEX_FACE = 0, EDGE_EDGE };	// Possible contacts types
 													// If the type is VERTEX_FACE, there is the assumption that the vertex is from RigidBody A 
 													// and the face is from the RigidBody B
@@ -68,6 +71,41 @@ namespace PhysicEngine
 
 
 	/**
+	 * Compute collision response
+
+	 * Compute the collision response taking into account both the colliding and the resting contact for the
+	 * rigid bodies in the scene, given a contact set detected in the previous collision detection phase.
+	 *
+	 * @param t	The current simulation time
+	 * @param dt The time step
+	 * @param contacts The list of contacts detected in the collision detection phase
+	 * @param bodies The list of RigidBodies in the scene
+	 */
+	void DoCollisionResponse(float t, float dt, const std::vector<Contact>& contacts, const std::vector<RigidBody*>& bodies);
+
+
+	/** 
+	 * Compute relative pre contact velocities
+	 *
+	 * Compute the objects contact points relative velocities of the for each pair involved in a contact
+	 *
+	 * @param contacts The contacts vector detected in the previous collision detection phase
+	 * @return A vector of relative velocities between objects for each object pairs involved in a contact
+	 */
+	std::vector<float> ComputePreContactVelocities(const std::vector<Contact>& contacts);
+
+	/**
+	 * Compute 	 *
+	 * Compute 
+	 *
+	 * @param 
+	 * @return 
+	 */
+	void Minimize(int N, float** M, const std::vector<float>& preContactVelocities, std::vector<float>& outPostContactVelocities, float* impulsesMagnitude);
+
+
+
+	/**
 	 * Process a colliding contact bewtween two RigidBody
 	 *
 	 * @param	rbA				first RigidBody involved in the collision
@@ -77,17 +115,10 @@ namespace PhysicEngine
 	 */
 	void ProcessCollidingContact(RigidBody& rbA, RigidBody& rbB, const glm::vec3& collidingPoint, const glm::vec3& normal);
 
-
-
-
-
-	void DoCollisionResponse(float t, float dt, std::vector<Contact> contacts, std::vector<RigidBody*> bodies);
 	void DoMotion(float t, float dt, std::vector<Contact> contacts, float* restingMagnitute, std::vector<RigidBody*> bodies);
-	void Minimize(int N, float** M, float* preImpulseVelocities, float* postImpulseVel, float* impulsesMagnitude);
+	
 	void DoImpulse(std::vector<Contact> contacts, float* impulsesMagnitude);
 	void ComputingRestingContactVector(std::vector<Contact> contacts, float* b);
 	void ComputeLCPMatrix(std::vector<Contact> contacts, float** M, int N);
-
-	float* ComputePreInpulseVelocity(std::vector<Contact> contacts);
 
 }

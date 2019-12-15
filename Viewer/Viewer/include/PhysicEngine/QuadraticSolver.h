@@ -22,7 +22,7 @@ namespace PhysicEngine
 
 			// Build the LCP matrix M. 
 			// The M matrix is the size*2 block matrix { 2*S, AT; -A, 0 }
-			float** M = Memory::CreateMatrix(3, 3);
+			float** M = Memory::CreateMatrix(sizeS + sizeA, sizeS + sizeA);
 
 			// 2*S block
 			for (int i = 0; i < sizeS; i++)
@@ -81,23 +81,33 @@ namespace PhysicEngine
 
 			// Convert the problem to the form x^t S x + cx + k, subject to the constrains g(x) = (Ax - b, -x) <= 0, i.e.Ax <= b and x > = 0
 
-			// Compute S = A * AT
+			// Compute S = AT * A
 			float** S0 = Memory::CreateMatrix(size, size);
-			for (int i = 0; i <= size; i++)
+			float** AT = Memory::CreateMatrix(size, size);
+			for (int i = 0; i < size; i++)
+			{
+				for (int j = 0; j < size; j++)
+				{
+					AT[i][j] = A[j][i];
+				}
+			}
+
+
+			for (int i = 0; i < size; i++)
 			{
 				for (int j = 0; j < size; j++)
 				{
 					S0[i][j] = 0.0f;
-					for (int k = 0; j < size; j++)
+					for (int k = 0; k < size; k++)
 					{
-						S0[i][j] += A[i][k] * A[j][k];
+						S0[i][j] += AT[i][k] * A[k][j];
 					}
 				}
 			}
 
 			// Compute A0 = { -A; A }
-			float** A0 = Memory::CreateMatrix(size, size * 2);
-			for (int i = 0; i <= size; i++)
+			float** A0 = Memory::CreateMatrix(size * 2, size);
+			for (int i = 0; i < size; i++)
 			{
 				for (int j = 0; j < size; j++)
 				{
@@ -113,7 +123,7 @@ namespace PhysicEngine
 				c0[i] = 0.0f;
 				for (int k = 0; k < size; k++)
 				{
-					c0[i] += 2.0f * b[k] * A[k][i];
+					c0[i] += -2.0f * b[k] * A[k][i];
 				}
 			}
 
@@ -127,11 +137,10 @@ namespace PhysicEngine
 
 			// Compute K
 			float k = 0.0f;
-			for (int i = 0; i <= size; i++)
+			for (int i = 0; i < size; i++)
 			{
 				k += powf(b[i], 2);
 			}
-			k = sqrt(k);
 
 			MinimizeQuadraticFunction(size, S0, size * 2, A0, b0, c0, k, x, hasSolution);
 		};

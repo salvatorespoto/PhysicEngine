@@ -47,6 +47,6 @@ glm::vec3 GravityForce(
 	glm::vec3 LinearVelocity,
 	glm::vec3 AngularVelocity)
 {
-	return glm::vec3(0.0f, ObjectMass * -0.098f, 0.0f);
+	return glm::vec3(0.0f, ObjectMass * -9.8f, 0.0f);
 }
 
