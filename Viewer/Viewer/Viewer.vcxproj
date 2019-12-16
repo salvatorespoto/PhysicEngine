@@ -166,7 +166,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="include\PhysicEngine\custom_map.cpp" />
     <ClCompile Include="include\PhysicEngine\collision.cpp" />
+    <ClCompile Include="include\PhysicEngine\Edge.cpp" />
     <ClCompile Include="include\PhysicEngine\Engine.cpp" />
     <ClCompile Include="include\PhysicEngine\DataTypes.cpp" />
     <ClCompile Include="glad.c" />
@@ -184,7 +186,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="include\PhysicEngine\custom_map.h" />
     <ClInclude Include="include\PhysicEngine\collision.h" />
+    <ClInclude Include="include\PhysicEngine\constants.h" />
+    <ClInclude Include="include\PhysicEngine\Edge.h" />
     <ClInclude Include="include\PhysicEngine\Engine.h" />
     <ClInclude Include="include\PhysicEngine\force.h" />
     <ClInclude Include="include\PhysicEngine\Functions.h" />

@@ -331,16 +331,18 @@ void ViewerApp::SetupScene()
 	);
 	MeshMap["cube"]->PhysicRigidBody->LinearMomentum = MeshMap["cube"]->PhysicRigidBody->Mass * glm::vec3(0.0f, 0.0f, 0.0f);
 	MeshMap["cube"]->PhysicRigidBody->AngularMomentum = MeshMap["cube"]->PhysicRigidBody->Mass * glm::vec3(0.0f, 0.0f, 0.0f);
-	//MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
 	*/
+	//MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
+	
 	MeshMap["cube"]->PhysicRigidBody->SetState(
 		glm::vec3(-1.0f, 14.0f, 0.0f),
 		glm::identity<glm::quat>(),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 0.0f)
 	);
+	MeshMap["cube"]->PhysicRigidBody->LinearVelocity = glm::vec3(0.0f, -3.0f, 0);
 	//MeshMap["parallelepipedon"]->PhysicRigidBody->AngularMomentum = MeshMap["parallelepipedon"]->PhysicRigidBody->Mass * glm::vec3(0.0f, 0.1f, 0);
-	MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
+	//MeshMap["cube"]->PhysicRigidBody->SetForceFunction(GravityForce);
 
 /*
 	MeshMap["suzanne"]->PhysicRigidBody->SetState(

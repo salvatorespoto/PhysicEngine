@@ -7,7 +7,10 @@
 #include <set>
 #include <unordered_set>
 
-using namespace PhysicEngine;
+#include "Edge.h"
+
+namespace PhysicEngine
+{
 
 
 RigidBody::RigidBody(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles)
@@ -18,87 +21,110 @@ RigidBody::RigidBody(std::vector<glm::vec3>& vertices, std::vector<unsigned int>
 	// Due the 3D mesh is convex all the face that have the same normal are adjacent and could be merged 
 	// into a single face.
 
+	/*
 	// Comparator for the normals multimap
 	auto vec3Hash = [](const glm::vec3& hs) {
-		return std::hash<int>()(hs.x) ^ std::hash<int>()(hs.y) ^ std::hash<int>()(hs.y);
+		return std::hash<int>()(hs.x) ^ std::hash<int>()(hs.y) ^ std::hash<int>()(hs.z);
 	};
 
 	auto vec3KeyEqual = [](const glm::vec3& lhs, const glm::vec3& rhs) {
 		return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
 	};
+	*/
 
-	std::unordered_map<glm::vec3, std::vector<Edge>, decltype(vec3Hash), decltype(vec3KeyEqual)> normalFaceMap(1, vec3Hash, vec3KeyEqual);
+	// A normal -> (vector of edges in a face) map, used to group all the face edges that have the same normal
+	std::unordered_map<glm::vec3, std::vector<Edge>, decltype(vec3Hash), decltype(vec3KeyEqual)> nfMap(1, vec3Hash, vec3KeyEqual);
+	
 	for (unsigned int j = 0; j < triangles.size(); j += 3) {
 
-		unsigned int i0 = triangles[j];
-		unsigned int i1 = triangles[j + 1];
-		unsigned int i2 = triangles[j + 2];
+		int i0 = triangles[j];
+		int i1 = triangles[j + 1];
+		int i2 = triangles[j + 2];
+		
+		// We are assuming triangle verticies are already in COUNTERCLOCKWISE order, so we preserve this order in edges
+		// Each edge is directioned in couterclockwise order and also the edges in a face are stored in counterclockwise order
+		std::vector<Edge> triangle = 
+		{ 
+			{ this, i0, i1 },
+			{ this, i1, i2 },
+			{ this, i2, i0 }
+		};
 
-		glm::vec3 normal = glm::normalize(glm::cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i1]));
-		std::vector<Edge> edges = { { i0, i1 }, { i1, i2 }, { i2, i0 } };
+		// Compute the face normal assuming the COUNTERCLOCKWISE order
+		glm::vec3 normal = glm::normalize(glm::cross(triangle[0].V(), triangle[1].V()));
 
-		if (normalFaceMap.find(normal) == normalFaceMap.end())
+
+
+		// Remove touching edges of coplanar triangles
+		if (nfMap.find(normal) == nfMap.end())
 		{
-			normalFaceMap[normal] = edges;
+			nfMap[normal] = triangle;
 		}
 		else
 		{
-			for (Edge e0 : edges)
+			// If the edges of the new triangle are already in the list of the edges that share the same normal
+			// it means that is an internal face edges and could be removed
+			for (Edge e0 : triangle)
 			{
 				// Removing edges that appears twice (internal face edges) ...
-				std::vector<Edge>& newFaceEdges = normalFaceMap[normal];
-				if (std::count_if(newFaceEdges.begin(), newFaceEdges.end(), [&e0](Edge e1)
-					{ return (e0.x == e1.y && e0.y == e1.x); }) == 1)
+				std::vector<Edge>& edges = nfMap[normal];
+
+				auto eIt = std::find_if(edges.begin(), edges.end(),
+					[&e0](Edge e1)
+					{
+						// If there is a duplicate edge already in the list it is in reverse order
+						return (e0.I(0) == e1.I(1) && e0.I(1) == e1.I(0));
+					});
+				if(eIt != edges.end())
 				{
-					newFaceEdges.erase(std::remove(newFaceEdges.begin(), newFaceEdges.end(), Edge{ e0.y, e0.x }), newFaceEdges.end());
+					// If found, remove the duplicate edge from the list ...
+					edges.erase(std::remove(edges.begin(), edges.end(), *eIt), edges.end());
 				}
 
-				// ... add the others
+				// ... and add the remaing edges to the list 
 				else
 				{
-					newFaceEdges.push_back(e0);
+					edges.push_back(e0);
 				}
 			}
 		}
 	}
 
+
 	// Sort all edges so that the first vertex of a follower is the last vertex of the previous	
-	for (auto kv : normalFaceMap)
+	for (auto nf : nfMap)
 	{
 		Face face;
 		std::vector<Edge> faceEdges;
 
-		faceEdges.push_back(kv.second.back());
-		Edges.push_back((kv.second.back()));
-		face.vertexIds.push_back(kv.second.back().x);
-		kv.second.pop_back();
+		faceEdges.push_back(nf.second.back());
+		Edges.push_back((nf.second.back()));
+		face.vertexIds.push_back(nf.second.back().I(0));
+		nf.second.pop_back();
 
-		for (Edge e0 = faceEdges.back(); !kv.second.empty(); e0 = faceEdges.back())
+		for (Edge e0 = faceEdges.back(); !nf.second.empty(); e0 = faceEdges.back())
 		{
-			auto e = std::find_if(kv.second.begin(), kv.second.end(),
+			auto e = std::find_if(nf.second.begin(), nf.second.end(),
 				[&e0](Edge e1)
 				{
-					return e0.y == e1.x;
+					return e0.P(1) == e1.P(0);
 				}
 			);
 
 			faceEdges.push_back(*e);
 			Edges.push_back((*e));
-			face.vertexIds.push_back((*e).x);
-			kv.second.erase(e);
+			face.vertexIds.push_back((*e).I(0));
+			nf.second.erase(e);
 		}
 
-		//Faces.push_back(face);
 	}
 
 	// Remove duplicate edges
-	auto EdgeHash = [](const Edge& hs) {
-		return std::hash<int>()(hs.x) ^ std::hash<int>()(hs.y);
+	auto EdgeHash = [](const Edge& e) {
+		return std::hash<int>()(e.I(0)) ^ std::hash<int>()(e.I(0));
 	};
-	auto EdgeEqual = [](const Edge& lhs, const Edge& rhs) {
-		return (lhs.x == rhs.x && lhs.y == rhs.y) || (lhs.x == rhs.y && lhs.y == rhs.x);
-	};
-	std::unordered_set<Edge, decltype(EdgeHash), decltype(EdgeEqual) > et(1, EdgeHash, EdgeEqual);
+
+	std::unordered_set<Edge, decltype(EdgeHash)> et(1, EdgeHash);
 	for (Edge e : Edges) et.insert(e);
 	Edges.clear();
 	std::copy(et.begin(), et.end(), std::back_inserter(Edges));
@@ -134,13 +160,13 @@ PhysicEngine::RenderPolyhedronData RigidBody::GetRenderPolyhedronData()
 	for (Face f : Faces)
 	{
 		data.vertices.push_back(RenderVertex{ Vertices[f.vId[0]], f.n });
-		data.elements.push_back(data.vertices.size() - 1);
+		data.elements.push_back(static_cast<unsigned int> (data.vertices.size()) - 1);
 
 		data.vertices.push_back(RenderVertex{ Vertices[f.vId[1]], f.n });
-		data.elements.push_back(data.vertices.size() - 1);
+		data.elements.push_back(static_cast<unsigned int> (data.vertices.size()) - 1);
 
 		data.vertices.push_back(RenderVertex{ Vertices[f.vId[2]], f.n });
-		data.elements.push_back(data.vertices.size() - 1);
+		data.elements.push_back(static_cast<unsigned int> (data.vertices.size()) - 1);
 	}
 
 	return data;
@@ -326,7 +352,7 @@ void RigidBody::ComputeOrientedBoundingBox() {
 
 void RigidBody::UpdateState(float t, float dt)
 {
-	float halfdt = dt / 2.0f;
+/*	float halfdt = dt / 2.0f;
 	float sixthdt = dt / 6.0f;
 
 	glm::vec3 Xn, Pn, Ln, Vn, Wn;
@@ -392,12 +418,12 @@ void RigidBody::UpdateState(float t, float dt)
 
 	ComputeSecondaryState(Position, OrientationQuaternion, LinearMomentum, AngularMomentum, 
 		OrientationMatrix, LinearVelocity, AngularVelocity);
-	
+*/	
 	ComputeModelMatrix();
 
 	// Update exteranl force and torque
-	ExternalForce = Force(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
-	ExternalTorque = Torque(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	//ExternalForce = Force(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
+	//ExternalTorque = Torque(t + dt, Mass, Xn, Qn, Pn, Ln, Rn, Vn, Wn);
 }
 
 
@@ -454,4 +480,4 @@ void RigidBody::SetTorqueFunction(TorqueFunction torque)
 }
 
 
-
+ }

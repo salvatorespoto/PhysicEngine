@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "DataTypes.h"
+#include "custom_map.h"
 #include "Functions.h"
 #include "RigidBody.h"
 #include "collision.h"

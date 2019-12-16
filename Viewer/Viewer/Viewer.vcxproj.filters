@@ -63,6 +63,12 @@
     <ClCompile Include="include\PhysicEngine\QuadraticSolver.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="include\PhysicEngine\custom_map.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\Edge.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ViewerApp.h">
@@ -114,6 +120,15 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\PhysicEngine\QuadraticSolver.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\constants.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\custom_map.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\Edge.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

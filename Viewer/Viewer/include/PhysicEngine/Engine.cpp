@@ -1,85 +1,88 @@
 #include "Engine.h"
 
-
-void RigidBodyEngine::Tick()
+namespace PhysicEngine
 {
-	DetectCollisions();
-	ProcessCollisions();
-	Update();
-}
 
-
-void RigidBodyEngine::SetStartingTime(float t)
-{
-	currentTime = t;
-}
-
-
-void RigidBodyEngine::SetTimeStep(float dt)
-{
-	timeStep = dt;
-}
-
-
-void RigidBodyEngine::AddRigidBody(RigidBody* rb)
-{
-	Objects.push_back(rb);
-}
-
-
-const std::vector<RigidBody*>& RigidBodyEngine::GetRigidBodies()
-{
-	return Objects;
-}
-
-
-const std::vector<Contact>& RigidBodyEngine::GetContacts()
-{
-	return Contacts;
-}
-
-
-void RigidBodyEngine::DetectCollisions()
-{
-	// Reset collisions
-	Contacts.clear();
-	for (RigidBody* rb : Objects)
+	void RigidBodyEngine::Tick()
 	{
-		rb->IsColliding = false;
+		DetectCollisions();
+		//ProcessCollisions();
+		Update();
 	}
 
-	// Detect collisions and compute contact sets
-	for (RigidBody* rbA : Objects)
+
+	void RigidBodyEngine::SetStartingTime(float t)
 	{
-		for (RigidBody* rbB : Objects)
+		currentTime = t;
+	}
+
+
+	void RigidBodyEngine::SetTimeStep(float dt)
+	{
+		timeStep = dt;
+	}
+
+
+	void RigidBodyEngine::AddRigidBody(RigidBody* rb)
+	{
+		Objects.push_back(rb);
+	}
+
+
+	const std::vector<RigidBody*>& RigidBodyEngine::GetRigidBodies()
+	{
+		return Objects;
+	}
+
+
+	const std::vector<Contact>& RigidBodyEngine::GetContacts()
+	{
+		return Contacts;
+	}
+
+
+	void RigidBodyEngine::DetectCollisions()
+	{
+		// Reset collisions
+		Contacts.clear();
+		for (RigidBody* rb : Objects)
 		{
-			if (rbA == rbB) break;
-			std::vector<Contact> cs = TestRigidBodyIntersect(currentTime, timeStep, *rbA, *rbB);
-			if (!cs.empty())
+			rb->IsColliding = false;
+		}
+
+		// Detect collisions and compute contact sets
+		for (RigidBody* rbA : Objects)
+		{
+			for (RigidBody* rbB : Objects)
 			{
-				rbA->IsColliding = true;
-				rbB->IsColliding = true;
-				for (Contact c : cs) Contacts.push_back(c);
+				if (rbA == rbB) break;
+				std::vector<Contact> cs = TestRigidBodyIntersect(currentTime, timeStep, *rbA, *rbB);
+				if (!cs.empty())
+				{
+					rbA->IsColliding = true;
+					rbB->IsColliding = true;
+					for (Contact c : cs) Contacts.push_back(c);
+				}
 			}
 		}
 	}
-}
 
 
-void RigidBodyEngine::ProcessCollisions()
-{
-	if (Contacts.size() > 0)
+	void RigidBodyEngine::ProcessCollisions()
 	{
-		DoCollisionResponse(currentTime, timeStep, Contacts, Objects);
+		if (Contacts.size() > 0)
+		{
+			DoCollisionResponse(currentTime, timeStep, Contacts, Objects);
+		}
 	}
-}
 
 
-void RigidBodyEngine::Update()
-{
-	for (RigidBody* b : Objects)
+	void RigidBodyEngine::Update()
 	{
-		b->UpdateState(currentTime, timeStep);
+		for (RigidBody* b : Objects)
+		{
+			b->UpdateState(currentTime, timeStep);
+		}
+		currentTime += timeStep;
 	}
-	currentTime += timeStep;
 }

@@ -32,8 +32,6 @@ namespace PhysicEngine
 		return b[0] && b[1] && b[2];
 	}
 
-	const int T_MAX_INTERSECTION_PREDICTION = 1.0f / 60.0f;
-
 	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance)
 	{
 		// Bounding box transform matrix
@@ -131,7 +129,6 @@ namespace PhysicEngine
 
 		std::vector<Contact> outContacts;
 
-		double min0, max0, min1, max1;
 		glm::mat3 M0 = glm::mat3(c0.ModelMatrix);
 		glm::mat3 M1 = glm::mat3(c1.ModelMatrix);
 
@@ -139,7 +136,7 @@ namespace PhysicEngine
 		double tFirst = 0.0f;
 		double tLast = 99999999.0f;
 		int side = 0;
-		float tMax = timeStep;
+		float tMax = 5;// timeStep;
 
 		PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1, pCurr0, pCurr1;
 		// Test direction parallel to faces normal of c0
@@ -168,14 +165,14 @@ namespace PhysicEngine
 		// Test direction paralles to the cross product of two edges
 		for(const Edge e0 : c0.Edges)
 		{
-			glm::vec3 edge0 = c0.Vertices[e0[1]] - c0.Vertices[e0[0]];
+			//glm::vec3 edge0 = c0.Vertices[e0[1]] - c0.Vertices[e0[0]];
 			
 			for (const Edge e1 : c1.Edges)
 			{
-				glm::vec3 edge1 = c1.Vertices[e1[1]] - c1.Vertices[e1[0]];
+				//glm::vec3 edge1 = c1.Vertices[e1[1]] - c1.Vertices[e1[0]];
 
 				PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-				glm::vec3&& axis = glm::normalize(glm::cross(M0 * edge0, M1 * edge1));
+				glm::vec3&& axis = glm::normalize(glm::cross(M0 * e0.V(), M1 * e1.V()));
 				if (axis == glm::vec3(0, 0, 0)) break;
 				ComputeRigidBodyProjectionOnAxis(c0, axis, projectionInfo0);
 				ComputeRigidBodyProjectionOnAxis(c1, axis, projectionInfo1);
@@ -275,7 +272,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMax.vertices.clear();
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.faces.clear();
-					outProjectionInfo.sMax.edges.push_back(glm::ivec2(f.vId[0], f.vId[1]));
+					outProjectionInfo.sMax.edges.push_back(Edge(&c0, (int) f.vId[0], (int)f.vId[1]));
 				}
 			
 				if (LessThan(t0, outProjectionInfo.min) || (Equal(t0, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
@@ -285,7 +282,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMin.vertices.clear();
 					outProjectionInfo.sMin.edges.clear();
 					outProjectionInfo.sMin.faces.clear();
-					outProjectionInfo.sMin.edges.push_back(glm::ivec2(f.vId[0], f.vId[1]));
+					outProjectionInfo.sMin.edges.push_back(Edge(&c0, (int) f.vId[0], (int)f.vId[1]));
 				}
 			}
 
@@ -300,7 +297,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMax.vertices.clear();
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.faces.clear();
-					outProjectionInfo.sMax.edges.push_back(glm::ivec2(f.vId[1], f.vId[2]));
+					outProjectionInfo.sMax.edges.push_back(Edge(&c0, (int)f.vId[1], (int)f.vId[2]));
 				}
 
 				if (LessThan(t1, outProjectionInfo.min) || (Equal(t1, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
@@ -310,7 +307,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMin.vertices.clear();
 					outProjectionInfo.sMin.faces.clear();
 					outProjectionInfo.sMin.edges.clear();
-					outProjectionInfo.sMin.edges.push_back(glm::ivec2(f.vId[1], f.vId[2]));
+					outProjectionInfo.sMin.edges.push_back(Edge(&c0, (int)f.vId[1], (int)f.vId[2]));
 				}
 			}
 
@@ -324,7 +321,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMax.vertices.clear();
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.faces.clear();
-					outProjectionInfo.sMax.edges.push_back(glm::ivec2(f.vId[2], f.vId[0]));
+					outProjectionInfo.sMax.edges.push_back(Edge(&c0, (int)f.vId[2], (int)f.vId[0]));
 				}
 				
 				if (LessThan(t2, outProjectionInfo.min) || (Equal(t2, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
@@ -334,7 +331,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMin.vertices.clear();
 					outProjectionInfo.sMin.faces.clear();
 					outProjectionInfo.sMin.edges.clear();
-					outProjectionInfo.sMin.edges.push_back(glm::ivec2(f.vId[2], f.vId[0]));
+					outProjectionInfo.sMin.edges.push_back(Edge(&c0, (int)f.vId[2], (int)f.vId[0]));
 				}
 			}
 
@@ -514,8 +511,8 @@ namespace PhysicEngine
 			{
 				glm::vec3 e0[2] = 
 				{
-					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0)[0]],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
-					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0)[1]],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
+					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0).I(0)],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+					(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMax.edges.at(0).I(1)],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 				};
 
 				// c0 EDGE - c1 EDGE
@@ -523,8 +520,8 @@ namespace PhysicEngine
 				{
 					glm::vec3 e1[2] =
 					{
-						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
-						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
+						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0).I(0)], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+						(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0).I(1)], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 					};
 					outContacts = GetEdgeEdgeIntersection(c0, c1, e0[0], e0[1], e1[0], e1[1]);
 				}
@@ -571,7 +568,7 @@ namespace PhysicEngine
 								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 							},
 							{ 
-								glm::ivec2(0, 1)
+								Edge(&c1, 0, 1)
 							}
 						};
 						edges.push_back(edge);
@@ -622,7 +619,7 @@ namespace PhysicEngine
 								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 							},
 							{
-								glm::ivec2(0, 1)
+								Edge(&c0, 0, 1)
 							}
 						};
 						edges0.push_back(edge);
@@ -662,7 +659,7 @@ namespace PhysicEngine
 								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 							},
 							{
-								glm::ivec2(0, 1)
+								Edge(&c1, 0, 1)
 							}
 						};
 						edges1.push_back(edge);
@@ -673,8 +670,8 @@ namespace PhysicEngine
 						Object3D outIntersection;
 						glm::vec3 e1[2] =
 						{
-							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
-							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
+							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0).I(0)], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+							(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMin.edges.at(0).I(1)], 1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 						};
 
 						outContacts = GetEdgeFacesIntersection(c1, c0, e1[0], e1[1], edges0);
@@ -731,8 +728,8 @@ namespace PhysicEngine
 			{
 				glm::vec3 e1[2] =
 				{
-					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0)[0]],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
-					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0)[1]],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
+					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0).I(0)],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst),
+					(c1.ModelMatrix * glm::vec4(c1.Vertices[pInfo1.sMax.edges.at(0).I(1)],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 				};
 
 				// c1 EDGE - c0 EDGE
@@ -740,10 +737,10 @@ namespace PhysicEngine
 				{
 					glm::vec3 e0[2] =
 					{
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0).I(0)], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0).I(1)], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 					};
-					outContacts = GetEdgeEdgeIntersection(c0, c1, e1[0], e1[1], e0[0], e0[1]);
+					outContacts = GetEdgeEdgeIntersection(c1, c0, e1[0], e1[1], e0[0], e0[1]);
 				}
 
 				// c1 EDGE - c0 FACE
@@ -789,7 +786,7 @@ namespace PhysicEngine
 								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 							},
 							{
-								glm::ivec2(0, 1)
+								Edge(&c0, 0, 1)
 							}
 						};
 						edges.push_back(edge);
@@ -841,7 +838,7 @@ namespace PhysicEngine
 							(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 						},
 						{
-							glm::ivec2(0, 1)
+							Edge( &c1, 0, 1)
 						}
 					};
 					edges1.push_back(edge);
@@ -881,7 +878,7 @@ namespace PhysicEngine
 							(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 						},
 						{
-							glm::ivec2(0, 1)
+							Edge(&c0, 0, 1)
 						}
 					};
 					edges0.push_back(edge);
@@ -892,8 +889,8 @@ namespace PhysicEngine
 					Object3D outIntersection;
 					glm::vec3 e0[2] =
 					{
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[0]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
-						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0)[1]], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0).I(0)], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst),
+						(c0.ModelMatrix * glm::vec4(c0.Vertices[pInfo0.sMin.edges.at(0).I(1)], 1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 					};
 					outContacts = GetEdgeFacesIntersection(c0, c1, e0[0], e0[1], edges1);
 				}
