@@ -1,36 +1,10 @@
-#include "Functions.h"
 #include <map>
 
+#include "Functions.h"
+#include "math/comparison.h"
 
 namespace PhysicEngine
 {
-
-	bool Equal(float f0, float f1) 
-	{
-		return fabs(f1 - f0) < EPSILON_ZERO ? true : false;
-	}
-
-	bool GreaterThan(float f0, float f1)
-	{
-		return (f0 - f1) > EPSILON_ZERO ? true : false;
-	}
-
-	bool LessThan(float f0, float f1)
-	{
-		return (f0 - f1) < -EPSILON_ZERO ? true : false;
-	}
-
-	bool EpsilonEqual(const glm::vec3& v0, const glm::vec3& v1)
-	{
-		glm::bvec3 b = glm::epsilonEqual(v0, v1, EPSILON_ZERO);
-		return b[0] && b[1] && b[2];
-	}
-
-	bool EpsilonZero(const glm::vec3& v0)
-	{
-		glm::bvec3 b = glm::epsilonEqual(v0, glm::vec3(0,0,0), EPSILON_ZERO);
-		return b[0] && b[1] && b[2];
-	}
 
 	bool TestRayBoundingBoxIntersection(glm::vec3 origin, glm::vec3 direction, BoundingBox boundingBox, glm::mat4 modelMatrix, float& outIntersectionDistance)
 	{
@@ -133,8 +107,8 @@ namespace PhysicEngine
 		glm::mat3 M1 = glm::mat3(c1.ModelMatrix);
 
 		glm::vec3 v = c1.LinearVelocity - c0.LinearVelocity;	// Relative speed between c0 and c1
-		double tFirst = 0.0f;
-		double tLast = 99999999.0f;
+		float tFirst = 0.0f;
+		float tLast = 99999999.0f;
 		int side = 0;
 		float tMax = 5;// timeStep;
 
@@ -143,9 +117,9 @@ namespace PhysicEngine
 		for (const PhysicEngine::Face f : c0.Faces)
 		{
 			PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-			ComputeRigidBodyProjectionOnAxis(c0, M0 * f.n, projectionInfo0);
-			ComputeRigidBodyProjectionOnAxis(c1, M0 * f.n, projectionInfo1);
-			float speed = glm::dot(v, glm::normalize(M0 * f.n));
+			ComputeRigidBodyProjectionOnAxis(c0, M0 * f.N(), projectionInfo0);
+			ComputeRigidBodyProjectionOnAxis(c1, M0 * f.N(), projectionInfo1);
+			float speed = glm::dot(v, glm::normalize(M0 * f.N()));
 			if(NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast))
 				return outContacts;
 		}
@@ -154,25 +128,21 @@ namespace PhysicEngine
 		for (const PhysicEngine::Face f : c1.Faces)
 		{
 			PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-			ComputeRigidBodyProjectionOnAxis(c0, M1 * f.n, projectionInfo0);
-			ComputeRigidBodyProjectionOnAxis(c1, M1 * f.n, projectionInfo1);
-			float speed = glm::dot(v, glm::normalize(M1 * f.n));
+			ComputeRigidBodyProjectionOnAxis(c0, M1 * f.N(), projectionInfo0);
+			ComputeRigidBodyProjectionOnAxis(c1, M1 * f.N(), projectionInfo1);
+			float speed = glm::dot(v, glm::normalize(M1 * f.N()));
 			if (NoIntersect(tMax, speed, projectionInfo0, projectionInfo1, pCurr0, pCurr1, side, tFirst, tLast)) 
 				return outContacts;
 		}
 
 		
 		// Test direction paralles to the cross product of two edges
-		for(const Edge e0 : c0.Edges)
-		{
-			//glm::vec3 edge0 = c0.Vertices[e0[1]] - c0.Vertices[e0[0]];
-			
-			for (const Edge e1 : c1.Edges)
+		for(const glm::vec3 e0 : c0.EdgesDirs)
+		{			
+			for (const glm::vec3 e1 : c1.EdgesDirs)
 			{
-				//glm::vec3 edge1 = c1.Vertices[e1[1]] - c1.Vertices[e1[0]];
-
 				PhysicEngine::ProjectionInfo projectionInfo0, projectionInfo1;
-				glm::vec3&& axis = glm::normalize(glm::cross(M0 * e0.V(), M1 * e1.V()));
+				glm::vec3&& axis = glm::normalize(glm::cross(e0, e1));
 				if (axis == glm::vec3(0, 0, 0)) break;
 				ComputeRigidBodyProjectionOnAxis(c0, axis, projectionInfo0);
 				ComputeRigidBodyProjectionOnAxis(c1, axis, projectionInfo1);
@@ -190,7 +160,7 @@ namespace PhysicEngine
 	}
 
 
-	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, double& outMin, double& outMax)
+	void ComputeRigidBodyProjectionOnAxis(const PhysicEngine::RigidBody& c0, const glm::vec3& axis, float& outMin, float& outMax)
 	{
 		glm::vec3&& d = glm::normalize(axis);
 
@@ -199,7 +169,7 @@ namespace PhysicEngine
 		for (const glm::vec3& v : c0.Vertices)
 		{
 			Mv = (c0.ModelMatrix * glm::vec4(v , 1.0f)).xyz();
-			double p = glm::dot(Mv, d);
+			float p = glm::dot(Mv, d);
 			outMin = (p < outMin) ? p : outMin;
 			outMax = (p > outMax) ? p : outMax;
 		}
@@ -215,12 +185,12 @@ namespace PhysicEngine
 		for (const Face& f : c0.Faces)
 		{
 			// Transform the three vertices according to the model matrix
-			glm::vec3 Mv0 = (c0.ModelMatrix * glm::vec4(c0.Vertices[f.vId[0]], 1.0f)).xyz();
-			glm::vec3 Mv1 = (c0.ModelMatrix * glm::vec4(c0.Vertices[f.vId[1]], 1.0f)).xyz();
-			glm::vec3 Mv2 = (c0.ModelMatrix * glm::vec4(c0.Vertices[f.vId[2]], 1.0f)).xyz();
+			glm::vec3 Mv0 = (c0.ModelMatrix * glm::vec4(c0.Vertices[f.I(0)], 1.0f)).xyz();
+			glm::vec3 Mv1 = (c0.ModelMatrix * glm::vec4(c0.Vertices[f.I(1)], 1.0f)).xyz();
+			glm::vec3 Mv2 = (c0.ModelMatrix * glm::vec4(c0.Vertices[f.I(2)], 1.0f)).xyz();
 
 			// Project the face vertices onto the direction d
-			double t0, t1, t2;
+			float t0, t1, t2;
 			t0 = glm::dot(Mv0, d);
 			t1 = glm::dot(Mv1, d);
 			t2 = glm::dot(Mv2, d);
@@ -229,9 +199,9 @@ namespace PhysicEngine
 			// UPDATE MAXIMUM 
 
 			// If the face is perpendicular the the direction d, the whole face is a candidate to be a contact set
-			if (Equal(t0, t1) && Equal(t1, t2))
+			if (EpsEqual(t0, t1) && EpsEqual(t1, t2))
 			{
-				if (GreaterThan(t0, outProjectionInfo.max))
+				if (EpsGreaterThan(t0, outProjectionInfo.max))
 				{
 					outProjectionInfo.max = t0;
 					outProjectionInfo.sMax.type = ContactSet::FACE;
@@ -239,14 +209,14 @@ namespace PhysicEngine
 					outProjectionInfo.sMax.faces.clear();
 					outProjectionInfo.sMax.faces.push_back(f);
 				}
-				else if (Equal(t0, outProjectionInfo.max))
+				else if (EpsEqual(t0, outProjectionInfo.max))
 				{
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.type = ContactSet::FACE;
 					outProjectionInfo.sMax.faces.push_back(f);
 				}
 
-				if (LessThan(t0, outProjectionInfo.min))
+				if (EpsLessThan(t0, outProjectionInfo.min))
 				{
 					outProjectionInfo.min = t0;
 					outProjectionInfo.sMin.type = ContactSet::FACE;
@@ -254,7 +224,7 @@ namespace PhysicEngine
 					outProjectionInfo.sMin.faces.clear();
 					outProjectionInfo.sMin.faces.push_back(f);
 				}
-				else if (Equal(t0, outProjectionInfo.min))
+				else if (EpsEqual(t0, outProjectionInfo.min))
 				{
 					outProjectionInfo.sMin.edges.clear();
 					outProjectionInfo.sMin.type = ContactSet::FACE;
@@ -263,127 +233,127 @@ namespace PhysicEngine
 			}
 
 			// An edge is perpendicular to the direction d and is the candidate to be a contact set
-			else if (Equal(t0, t1))
+			else if (EpsEqual(t0, t1))
 			{
-				if (GreaterThan(t0, outProjectionInfo.max) || (Equal(t0, outProjectionInfo.max) && outProjectionInfo.sMax.type != ContactSet::FACE))
+				if (EpsGreaterThan(t0, outProjectionInfo.max) || (EpsEqual(t0, outProjectionInfo.max) && outProjectionInfo.sMax.type != ContactSet::FACE))
 				{
 					outProjectionInfo.max = t0;
 					outProjectionInfo.sMax.type = ContactSet::EDGE;
 					outProjectionInfo.sMax.vertices.clear();
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.faces.clear();
-					outProjectionInfo.sMax.edges.push_back(Edge(&c0, (int) f.vId[0], (int)f.vId[1]));
+					outProjectionInfo.sMax.edges.push_back(Edge(&f, (int) f.I(0), (int)f.I(1)));
 				}
 			
-				if (LessThan(t0, outProjectionInfo.min) || (Equal(t0, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
+				if (EpsLessThan(t0, outProjectionInfo.min) || (EpsEqual(t0, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
 				{
 					outProjectionInfo.min = t0;
 					outProjectionInfo.sMin.type = ContactSet::EDGE;
 					outProjectionInfo.sMin.vertices.clear();
 					outProjectionInfo.sMin.edges.clear();
 					outProjectionInfo.sMin.faces.clear();
-					outProjectionInfo.sMin.edges.push_back(Edge(&c0, (int) f.vId[0], (int)f.vId[1]));
+					outProjectionInfo.sMin.edges.push_back(Edge(&f, (int) f.I(0), (int)f.I(1)));
 				}
 			}
 
 			// An edge is perpendicular to the direction d and is the candidate to be a contact set
-			else if (Equal(t1, t2))
+			else if (EpsEqual(t1, t2))
 			{
 				// It's also equal becouse it is possible that we have already computed a vertex of this edge as projection max
-				if (GreaterThan(t1, outProjectionInfo.max) || (Equal(t1, outProjectionInfo.max) && outProjectionInfo.sMax.type != ContactSet::FACE))
+				if (EpsGreaterThan(t1, outProjectionInfo.max) || (EpsEqual(t1, outProjectionInfo.max) && outProjectionInfo.sMax.type != ContactSet::FACE))
 				{
 					outProjectionInfo.max = t1;
 					outProjectionInfo.sMax.type = ContactSet::EDGE;
 					outProjectionInfo.sMax.vertices.clear();
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.faces.clear();
-					outProjectionInfo.sMax.edges.push_back(Edge(&c0, (int)f.vId[1], (int)f.vId[2]));
+					outProjectionInfo.sMax.edges.push_back(Edge(&f, (int)f.I(1), (int)f.I(2)));
 				}
 
-				if (LessThan(t1, outProjectionInfo.min) || (Equal(t1, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
+				if (EpsLessThan(t1, outProjectionInfo.min) || (EpsEqual(t1, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
 				{
 					outProjectionInfo.min = t1;
 					outProjectionInfo.sMin.type = ContactSet::EDGE;
 					outProjectionInfo.sMin.vertices.clear();
 					outProjectionInfo.sMin.faces.clear();
 					outProjectionInfo.sMin.edges.clear();
-					outProjectionInfo.sMin.edges.push_back(Edge(&c0, (int)f.vId[1], (int)f.vId[2]));
+					outProjectionInfo.sMin.edges.push_back(Edge(&f, (int)f.I(1), (int)f.I(2)));
 				}
 			}
 
 			// An edge is perpendicular to the direction d and is the candidate to be a contact set
-			else if (Equal(t2, t0))
+			else if (EpsEqual(t2, t0))
 			{
-				if (GreaterThan(t2, outProjectionInfo.max) || (Equal(t2, outProjectionInfo.max) && outProjectionInfo.sMax.type != ContactSet::FACE))
+				if (EpsGreaterThan(t2, outProjectionInfo.max) || (EpsEqual(t2, outProjectionInfo.max) && outProjectionInfo.sMax.type != ContactSet::FACE))
 				{
 					outProjectionInfo.max = t2;
 					outProjectionInfo.sMax.type = ContactSet::EDGE;
 					outProjectionInfo.sMax.vertices.clear();
 					outProjectionInfo.sMax.edges.clear();
 					outProjectionInfo.sMax.faces.clear();
-					outProjectionInfo.sMax.edges.push_back(Edge(&c0, (int)f.vId[2], (int)f.vId[0]));
+					outProjectionInfo.sMax.edges.push_back(Edge(&f, (int)f.I(2), (int)f.I(0)));
 				}
 				
-				if (LessThan(t2, outProjectionInfo.min) || (Equal(t2, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
+				if (EpsLessThan(t2, outProjectionInfo.min) || (EpsEqual(t2, outProjectionInfo.min) && outProjectionInfo.sMin.type != ContactSet::FACE))
 				{
 					outProjectionInfo.min = t2;
 					outProjectionInfo.sMin.type = ContactSet::EDGE;
 					outProjectionInfo.sMin.vertices.clear();
 					outProjectionInfo.sMin.faces.clear();
 					outProjectionInfo.sMin.edges.clear();
-					outProjectionInfo.sMin.edges.push_back(Edge(&c0, (int)f.vId[2], (int)f.vId[0]));
+					outProjectionInfo.sMin.edges.push_back(Edge(&f, (int)f.I(2), (int)f.I(0)));
 				}
 			}
 
 			// Otherwise only a vertex could be a candidate for the contact set
-			if (!Equal(t0, t1) || !Equal(t1, t2) || !Equal(t2, t0))
+			if (!EpsEqual(t0, t1) || !EpsEqual(t1, t2) || !EpsEqual(t2, t0))
 			{
-				if (GreaterThan(t0, outProjectionInfo.max))
+				if (EpsGreaterThan(t0, outProjectionInfo.max))
 				{
 					outProjectionInfo.max = t0;
 					outProjectionInfo.sMax.type = ContactSet::VERTEX;
 					outProjectionInfo.sMax.vertices.clear();
-					outProjectionInfo.sMax.vertices.push_back(f.vId[0]);
+					outProjectionInfo.sMax.vertices.push_back(f.I(0));
 				}
 
-				if (GreaterThan(t1, outProjectionInfo.max))
+				if (EpsGreaterThan(t1, outProjectionInfo.max))
 				{
 					outProjectionInfo.max = t1;
 					outProjectionInfo.sMax.type = ContactSet::VERTEX;
 					outProjectionInfo.sMax.vertices.clear();
-					outProjectionInfo.sMax.vertices.push_back(f.vId[1]);
+					outProjectionInfo.sMax.vertices.push_back(f.I(1));
 				}
 
-				if (GreaterThan(t2, outProjectionInfo.max))
+				if (EpsGreaterThan(t2, outProjectionInfo.max))
 				{
 					outProjectionInfo.max = t2;
 					outProjectionInfo.sMax.type = ContactSet::VERTEX;
 					outProjectionInfo.sMax.vertices.clear();
-					outProjectionInfo.sMax.vertices.push_back(f.vId[2]);
+					outProjectionInfo.sMax.vertices.push_back(f.I(2));
 				}
 				
-				if (LessThan(t0, outProjectionInfo.min))
+				if (EpsLessThan(t0, outProjectionInfo.min))
 				{
 					outProjectionInfo.min = t0;
 					outProjectionInfo.sMin.type = ContactSet::VERTEX;
 					outProjectionInfo.sMin.vertices.clear();
-					outProjectionInfo.sMin.vertices.push_back(f.vId[0]);
+					outProjectionInfo.sMin.vertices.push_back(f.I(0));
 				}
 
-				if (LessThan(t1, outProjectionInfo.min))
+				if (EpsLessThan(t1, outProjectionInfo.min))
 				{
 					outProjectionInfo.min = t1;
 					outProjectionInfo.sMin.type = ContactSet::VERTEX;
 					outProjectionInfo.sMin.vertices.clear();
-					outProjectionInfo.sMin.vertices.push_back(f.vId[1]);
+					outProjectionInfo.sMin.vertices.push_back(f.I(1));
 				}
 
-				if (LessThan(t2, outProjectionInfo.min))
+				if (EpsLessThan(t2, outProjectionInfo.min))
 				{
 					outProjectionInfo.min = t2;
 					outProjectionInfo.sMin.type = ContactSet::VERTEX;
 					outProjectionInfo.sMin.vertices.clear();
-					outProjectionInfo.sMin.vertices.push_back(f.vId[2]);
+					outProjectionInfo.sMin.vertices.push_back(f.I(2));
 				}
 			}
 
@@ -391,8 +361,8 @@ namespace PhysicEngine
 	}
 
 
-	bool NoIntersect(double tMax, const float& speed, ProjectionInfo& projectionInfo0, ProjectionInfo& projectionInfo1,
-		ProjectionInfo& pCurr0, ProjectionInfo& pCurr1, int& side, double& tFirst, double& tLast)
+	bool NoIntersect(float tMax, const float& speed, ProjectionInfo& projectionInfo0, ProjectionInfo& projectionInfo1,
+		ProjectionInfo& pCurr0, ProjectionInfo& pCurr1, int& side, float& tFirst, float& tLast)
 	{
 	
 		// c1 is on the "left" of c0 on the direction d		
@@ -400,7 +370,7 @@ namespace PhysicEngine
 		{
 			if (speed <= 0)  return true;	// intervals are moving apart -> no intersection
 
-			double t = (projectionInfo0.min - projectionInfo1.max) / speed; // time of the first contact
+			float t = (projectionInfo0.min - projectionInfo1.max) / speed; // time of the first contact
 			if (t > tFirst) 
 			{ 
 				tFirst = t;
@@ -420,7 +390,7 @@ namespace PhysicEngine
 		{
 			if (speed >= 0)  return true;	// intervals are moving apart -> no intersection
 
-			double t = (projectionInfo0.max - projectionInfo1.min) / speed; // time of the first contact
+			float t = (projectionInfo0.max - projectionInfo1.min) / speed; // time of the first contact
 			if (t > tFirst) 
 			{
 				tFirst = t;
@@ -441,13 +411,13 @@ namespace PhysicEngine
 		{
 			if (speed > 0)
 			{
-				double t = (projectionInfo0.max - projectionInfo1.min) / speed; 
+				float t = (projectionInfo0.max - projectionInfo1.min) / speed;
 				if (t < tLast) tLast = t;
 				if (tFirst > tLast) return true;	// No intersection
 			}
 			if (speed < 0)
 			{
-				double t = (projectionInfo0.min - projectionInfo1.max) / speed;	// time of the last contact, when c1 surpass c0
+				float t = (projectionInfo0.min - projectionInfo1.max) / speed;	// time of the last contact, when c1 surpass c0
 				if (t < tLast) tLast = t;
 				if (tFirst > tLast) return true;	// No intersection
 			}
@@ -464,7 +434,7 @@ namespace PhysicEngine
 	 * @param c0 the first convex polyhedron* 
 	 */
 	void GetIntersection(RigidBody& c0, RigidBody& c1,
-		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts)
+		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, float tFirst, std::vector<Contact>& outContacts)
 	{
 		// c0 MAX meet C1 MIN
 		if (side == 1)
@@ -482,7 +452,7 @@ namespace PhysicEngine
 						c0,
 						c1,
 						v,
-						c1.OrientationMatrix * pInfo1.sMin.faces[0].n
+						c1.OrientationMatrix * pInfo1.sMin.faces[0].N()
 					);
 					outContacts.push_back(c);
 				}
@@ -500,7 +470,7 @@ namespace PhysicEngine
 						c1,
 						c0,
 						v,
-						c0.OrientationMatrix * pInfo0.sMax.faces[0].n
+						c0.OrientationMatrix * pInfo0.sMax.faces[0].N()
 					);
 					outContacts.push_back(c);
 				}
@@ -536,25 +506,26 @@ namespace PhysicEngine
 					for(Face f : pInfo1.sMin.faces) 
 					{
 						std::stringstream eId, eIdR;
-						eId << f.vId[1] << f.vId[0];
-						eIdR << f.vId[0] << f.vId[1];
+						eId << f.I(1) << f.I(0);
+						eIdR << f.I(0) << f.I(1);
 						if (edgesMap.find(eId.str()) != edgesMap.end()) edgesMap.erase(eId.str());
 						else if (edgesMap.find(eIdR.str()) != edgesMap.end()) edgesMap.erase(eIdR.str());
-						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[0], f.vId[1])));					
+						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(0), f.I(1))));					
 					
 						eId.str(""), eIdR.str("");
-						eId << f.vId[2] << f.vId[1];
-						eIdR << f.vId[1] << f.vId[2];
+						eId << f.I(2) << f.I(1);
+						eIdR << f.I(1) << f.I(2);
 						if (edgesMap.find(eId.str()) != edgesMap.end()) edgesMap.erase(eId.str());
 						else if (edgesMap.find(eIdR.str()) != edgesMap.end()) edgesMap.erase(eIdR.str());
-						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[1], f.vId[2])));
+						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(1), f.I(2))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[0] << f.vId[2];
-						eIdR << f.vId[2] << f.vId[0];
+						eId << f.I(0) << f.I(2);
+						eIdR << f.I(2) << f.I(0);
 						if (edgesMap.find(eId.str()) != edgesMap.end()) edgesMap.erase(eId.str());
 						else if (edgesMap.find(eIdR.str()) != edgesMap.end()) edgesMap.erase(eIdR.str());
-						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[2], f.vId[0])));
+						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(2), f.I(0))));
+					
 					}
 
 					std::vector<Object3D> edges;
@@ -568,7 +539,7 @@ namespace PhysicEngine
 								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 							},
 							{ 
-								Edge(&c1, 0, 1)
+								Edge(&pInfo1.sMin.faces[0], 0, 1)
 							}
 						};
 						edges.push_back(edge);
@@ -588,25 +559,25 @@ namespace PhysicEngine
 					for (Face f : pInfo0.sMax.faces)
 					{
 						std::stringstream eId, eIdR;
-						eId << f.vId[1] << f.vId[0];
-						eIdR << f.vId[0] << f.vId[1];
+						eId << f.I(1) << f.I(0);
+						eIdR << f.I(0) << f.I(1);
 						if (edgesMap0.find(eId.str()) != edgesMap0.end()) edgesMap0.erase(eId.str());
 						else if (edgesMap0.find(eIdR.str()) != edgesMap0.end()) edgesMap0.erase(eIdR.str());
-						else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[0], f.vId[1])));
+						else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(0), f.I(1))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[2] << f.vId[1];
-						eIdR << f.vId[1] << f.vId[2];
+						eId << f.I(2) << f.I(1);
+						eIdR << f.I(1) << f.I(2);
 						if (edgesMap0.find(eId.str()) != edgesMap0.end()) edgesMap0.erase(eId.str());
 						else if (edgesMap0.find(eIdR.str()) != edgesMap0.end()) edgesMap0.erase(eIdR.str());
-						else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[1], f.vId[2])));
+						else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(1), f.I(2))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[0] << f.vId[2];
-						eIdR << f.vId[2] << f.vId[0];
+						eId << f.I(0) << f.I(2);
+						eIdR << f.I(2) << f.I(0);
 						if (edgesMap0.find(eId.str()) != edgesMap0.end()) edgesMap0.erase(eId.str());
 						else if (edgesMap0.find(eIdR.str()) != edgesMap0.end()) edgesMap0.erase(eIdR.str());
-						else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[2], f.vId[0])));
+						else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(2), f.I(0))));
 					}
 					
 					for (auto it = edgesMap0.begin(); it != edgesMap0.end(); ++it)
@@ -619,7 +590,7 @@ namespace PhysicEngine
 								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 							},
 							{
-								Edge(&c0, 0, 1)
+								Edge(&pInfo1.sMax.faces[0], 0, 1)
 							}
 						};
 						edges0.push_back(edge);
@@ -629,25 +600,25 @@ namespace PhysicEngine
 					for (Face f : pInfo1.sMin.faces)
 					{
 						std::stringstream eId, eIdR;
-						eId << f.vId[1] << f.vId[0];
-						eIdR << f.vId[0] << f.vId[1];
+						eId << f.I(1) << f.I(0);
+						eIdR << f.I(0) << f.I(1);
 						if (edgesMap1.find(eId.str()) != edgesMap1.end()) edgesMap1.erase(eId.str());
 						else if (edgesMap1.find(eIdR.str()) != edgesMap1.end()) edgesMap1.erase(eIdR.str());
-						else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[0], f.vId[1])));
+						else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(0), f.I(1))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[2] << f.vId[1];
-						eIdR << f.vId[1] << f.vId[2];
+						eId << f.I(2) << f.I(1);
+						eIdR << f.I(1) << f.I(2);
 						if (edgesMap1.find(eId.str()) != edgesMap1.end()) edgesMap1.erase(eId.str());
 						else if (edgesMap1.find(eIdR.str()) != edgesMap1.end()) edgesMap1.erase(eIdR.str());
-						else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[1], f.vId[2])));
+						else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(1), f.I(2))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[0] << f.vId[2];
-						eIdR << f.vId[2] << f.vId[0];
+						eId << f.I(0) << f.I(2);
+						eIdR << f.I(2) << f.I(0);
 						if (edgesMap1.find(eId.str()) != edgesMap1.end()) edgesMap1.erase(eId.str());
 						else if (edgesMap1.find(eIdR.str()) != edgesMap1.end()) edgesMap1.erase(eIdR.str());
-						else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[2], f.vId[0])));
+						else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(2), f.I(0))));
 					}
 					for (auto it = edgesMap1.begin(); it != edgesMap1.end(); ++it)
 					{
@@ -659,7 +630,7 @@ namespace PhysicEngine
 								(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 							},
 							{
-								Edge(&c1, 0, 1)
+								Edge(&pInfo1.sMin.faces[0], 0, 1)
 							}
 						};
 						edges1.push_back(edge);
@@ -699,7 +670,7 @@ namespace PhysicEngine
 						c1,
 						c0,
 						v,
-						c0.OrientationMatrix * pInfo0.sMax.faces[0].n
+						c0.OrientationMatrix * pInfo0.sMax.faces[0].N()
 					);
 					outContacts.push_back(c);
 				}
@@ -717,7 +688,7 @@ namespace PhysicEngine
 						c0,
 						c1,
 						v,
-						c1.OrientationMatrix * pInfo1.sMax.faces[0].n
+						c1.OrientationMatrix * pInfo1.sMax.faces[0].N()
 					);
 					outContacts.push_back(c);
 				}
@@ -753,25 +724,25 @@ namespace PhysicEngine
 					for (Face f : pInfo0.sMin.faces)
 					{
 						std::stringstream eId, eIdR;
-						eId << f.vId[1] << f.vId[0];
-						eIdR << f.vId[0] << f.vId[1];
+						eId << f.I(1) << f.I(0);
+						eIdR << f.I(0) << f.I(1);
 						if (edgesMap.find(eId.str()) != edgesMap.end()) edgesMap.erase(eId.str());
 						else if (edgesMap.find(eIdR.str()) != edgesMap.end()) edgesMap.erase(eIdR.str());
-						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[0], f.vId[1])));
+						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(0), f.I(1))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[2] << f.vId[1];
-						eIdR << f.vId[1] << f.vId[2];
+						eId << f.I(2) << f.I(1);
+						eIdR << f.I(1) << f.I(2);
 						if (edgesMap.find(eId.str()) != edgesMap.end()) edgesMap.erase(eId.str());
 						else if (edgesMap.find(eIdR.str()) != edgesMap.end()) edgesMap.erase(eIdR.str());
-						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[1], f.vId[2])));
+						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(1), f.I(2))));
 
 						eId.str(""), eIdR.str("");
-						eId << f.vId[0] << f.vId[2];
-						eIdR << f.vId[2] << f.vId[0];
+						eId << f.I(0) << f.I(2);
+						eIdR << f.I(2) << f.I(0);
 						if (edgesMap.find(eId.str()) != edgesMap.end()) edgesMap.erase(eId.str());
 						else if (edgesMap.find(eIdR.str()) != edgesMap.end()) edgesMap.erase(eIdR.str());
-						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[2], f.vId[0])));
+						else edgesMap.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(2), f.I(0))));
 					}
 
 
@@ -786,7 +757,7 @@ namespace PhysicEngine
 								(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 							},
 							{
-								Edge(&c0, 0, 1)
+								Edge(&pInfo1.sMin.faces[0], 0, 1)
 							}
 						};
 						edges.push_back(edge);
@@ -807,25 +778,25 @@ namespace PhysicEngine
 				for (Face f : pInfo1.sMax.faces)
 				{
 					std::stringstream eId, eIdR;
-					eId << f.vId[1] << f.vId[0];
-					eIdR << f.vId[0] << f.vId[1];
+					eId << f.I(1) << f.I(0);
+					eIdR << f.I(0) << f.I(1);
 					if (edgesMap1.find(eId.str()) != edgesMap1.end()) edgesMap1.erase(eId.str());
 					else if (edgesMap1.find(eIdR.str()) != edgesMap1.end()) edgesMap1.erase(eIdR.str());
-					else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[0], f.vId[1])));
+					else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(0), f.I(1))));
 
 					eId.str(""), eIdR.str("");
-					eId << f.vId[2] << f.vId[1];
-					eIdR << f.vId[1] << f.vId[2];
+					eId << f.I(2) << f.I(1);
+					eIdR << f.I(1) << f.I(2);
 					if (edgesMap1.find(eId.str()) != edgesMap1.end()) edgesMap1.erase(eId.str());
 					else if (edgesMap1.find(eIdR.str()) != edgesMap1.end()) edgesMap1.erase(eIdR.str());
-					else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[1], f.vId[2])));
+					else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(1), f.I(2))));
 
 					eId.str(""), eIdR.str("");
-					eId << f.vId[0] << f.vId[2];
-					eIdR << f.vId[2] << f.vId[0];
+					eId << f.I(0) << f.I(2);
+					eIdR << f.I(2) << f.I(0);
 					if (edgesMap1.find(eId.str()) != edgesMap1.end()) edgesMap1.erase(eId.str());
 					else if (edgesMap1.find(eIdR.str()) != edgesMap1.end()) edgesMap1.erase(eIdR.str());
-					else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[2], f.vId[0])));
+					else edgesMap1.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(2), f.I(0))));
 				}
 
 				for (auto it = edgesMap1.begin(); it != edgesMap1.end(); ++it)
@@ -838,7 +809,7 @@ namespace PhysicEngine
 							(c1.ModelMatrix * glm::vec4(c1.Vertices[it->second.y],1.0f)).xyz() + (c1.LinearVelocity * (float)tFirst)
 						},
 						{
-							Edge( &c1, 0, 1)
+							Edge( &pInfo1.sMax.faces[0], 0, 1)
 						}
 					};
 					edges1.push_back(edge);
@@ -848,25 +819,25 @@ namespace PhysicEngine
 				for (Face f : pInfo0.sMin.faces)
 				{
 					std::stringstream eId, eIdR;
-					eId << f.vId[1] << f.vId[0];
-					eIdR << f.vId[0] << f.vId[1];
+					eId << f.I(1) << f.I(0);
+					eIdR << f.I(0) << f.I(1);
 					if (edgesMap0.find(eId.str()) != edgesMap0.end()) edgesMap0.erase(eId.str());
 					else if (edgesMap0.find(eIdR.str()) != edgesMap0.end()) edgesMap0.erase(eIdR.str());
-					else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[0], f.vId[1])));
+					else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(0), f.I(1))));
 
 					eId.str(""), eIdR.str("");
-					eId << f.vId[2] << f.vId[1];
-					eIdR << f.vId[1] << f.vId[2];
+					eId << f.I(2) << f.I(1);
+					eIdR << f.I(1) << f.I(2);
 					if (edgesMap0.find(eId.str()) != edgesMap0.end()) edgesMap0.erase(eId.str());
 					else if (edgesMap0.find(eIdR.str()) != edgesMap0.end()) edgesMap0.erase(eIdR.str());
-					else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[1], f.vId[2])));
+					else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(1), f.I(2))));
 
 					eId.str(""), eIdR.str("");
-					eId << f.vId[0] << f.vId[2];
-					eIdR << f.vId[2] << f.vId[0];
+					eId << f.I(0) << f.I(2);
+					eIdR << f.I(2) << f.I(0);
 					if (edgesMap0.find(eId.str()) != edgesMap0.end()) edgesMap0.erase(eId.str());
 					else if (edgesMap0.find(eIdR.str()) != edgesMap0.end()) edgesMap0.erase(eIdR.str());
-					else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.vId[2], f.vId[0])));
+					else edgesMap0.insert(std::pair<std::string, glm::ivec2>(eId.str(), glm::ivec2(f.I(2), f.I(0))));
 				}
 				for (auto it = edgesMap0.begin(); it != edgesMap0.end(); ++it)
 				{
@@ -878,7 +849,7 @@ namespace PhysicEngine
 							(c0.ModelMatrix * glm::vec4(c0.Vertices[it->second.y],1.0f)).xyz() + (c0.LinearVelocity * (float)tFirst)
 						},
 						{
-							Edge(&c0, 0, 1)
+							Edge(&pInfo1.sMin.faces[0], 0, 1)
 						}
 					};
 					edges0.push_back(edge);
@@ -914,7 +885,7 @@ namespace PhysicEngine
 		glm::vec3 e = glm::cross(p, r);
 		
 		// The two edges lay on the same line, in the engine we discard this type of intersection
-		if (EpsilonZero(e)) return contacts;
+		if (EpsZero(e)) return contacts;
 		/*
 		{
 			glm::vec3 d = glm::normalize(p);
@@ -965,7 +936,7 @@ namespace PhysicEngine
 		glm::vec3 s = glm::cross(q, p);
 
 		// Check if the two lines are parallel, but do not lay on the same line
-		if (EpsilonZero(s))
+		if (EpsZero(s))
 		{
 			// The two segments do not overlap
 			//outIntersection.type = Object3D::EMPTY;
@@ -973,20 +944,20 @@ namespace PhysicEngine
 		}
 
 		// Compute the distance between the two lines
-		if (Equal(fabs(glm::dot(r, glm::normalize(s))), 0))
+		if (EpsEqual(fabs(glm::dot(r, glm::normalize(s))), 0))
 		{
 			// Distance is 0, the two lines are incident, compute the intersection point
 			// that is p0 (+-) (cross(p,r)/cross(p,q)) * q
 			//outIntersection.type = Object3D::VERTEX;
 			glm::vec3 i;
-			if (EpsilonZero(t))
+			if (EpsZero(t))
 			{
 				// p0 is already the intersection point
 				i = p0;
 			}
 			else 
 			{
-				float sign = (EpsilonEqual(glm::normalize(t), glm::normalize(s))) ? 1 : -1;
+				float sign = (EpsEqual(glm::normalize(t), glm::normalize(s))) ? 1.0f : -1.0f;
 				i = p0 + sign * ((glm::length(t) / glm::length(s)) * p);
 			}
 

@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "DataTypes.h"
-#include "custom_map.h"
 #include "Functions.h"
 #include "RigidBody.h"
 #include "collision.h"
@@ -80,11 +79,12 @@ namespace PhysicEngine
 
 	private: 
 
-		float currentTime;					/**< Current simulation time */
-		float timeStep;						/**< The simulation time step */
+		float currentTime = 0.0f;							/**< Current simulation time */
+		const float DEFAULT_TIME_STEP = 1.0f / 60.0f;		/**< Default simulator frequency is 60HZ*/
+		float timeStep = DEFAULT_TIME_STEP;					/**< The simulation time step */
 
-		std::vector<RigidBody*> Objects; 	/**< List of Rigid Body objects in the scene */
-		std::vector<Contact> Contacts;		/**< Current detected contacts among objects */
+		std::vector<RigidBody*> Objects; 					/**< List of Rigid Body objects in the scene */
+		std::vector<Contact> Contacts;						/**< Current detected contacts among objects */
 		 
 		/**
 		 * Detect collsion among objects in the scene

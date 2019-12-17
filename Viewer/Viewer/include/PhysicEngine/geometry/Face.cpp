@@ -1,0 +1,63 @@
+#include <glm/glm.hpp>
+#include <glm/common.hpp>
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/mat3x3.hpp>
+
+#include "Face.h"
+#include "../RigidBody.h"
+
+
+namespace PhysicEngine 
+{
+		
+	Face::Face(const RigidBody* parent, std::vector<int> verticesIds)
+		: Parent(parent), Size(verticesIds.size()), VIds(verticesIds)
+	{
+
+		// Build edges, also edges will be in COUTERCLOCKWISE order
+		for (size_t i = 0; i < VIds.size(); i++)
+		{
+			Edges.push_back(Edge(this, VIds[i], VIds[(i + 1) % VIds.size()]));
+		}
+
+		// Compute normal assuming COUNTERCLOCKWISE vertices order
+		Normal = glm::normalize(glm::cross(Edges[0].D(), Edges[1].D()));
+	};
+
+	size_t Face::size() const
+	{
+		return VIds.size();
+	}
+
+	int Face::I(int i) const
+	{
+		return VIds[i];
+	}
+		
+	glm::vec3 Face::V(int i) const
+	{
+		return Parent->Vertices[VIds[i]];
+	}
+		
+	glm::vec3 Face::MV(int i) const
+	{
+		return glm::mat3(Parent->ModelMatrix) * Parent->Vertices[VIds[i]];
+	}
+
+	Edge Face::E(int i) const
+	{
+		return Edges[i];
+	}
+
+	glm::vec3 Face::N() const
+	{
+		return Normal;
+	}
+
+	glm::vec3 Face::MN() const
+	{
+		return glm::mat3(Parent->ModelMatrix) * Normal;
+	}
+
+}

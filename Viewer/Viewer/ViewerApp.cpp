@@ -261,8 +261,8 @@ void ViewerApp::HandleMouseInput()
 	
 	// Compute offsets of the mouse movement
 	// xOffset and yOffset will be the the yaw and pitch of the camera movement
- 	double xOffset = xCoordinate - MouseXCoordinate;
-	double yOffset = yCoordinate - MouseYCoordinate;
+	float xOffset = xCoordinate - MouseXCoordinate;
+	float yOffset = yCoordinate - MouseYCoordinate;
 
 	MouseXCoordinate = xCoordinate;
 	MouseYCoordinate = yCoordinate;
@@ -316,7 +316,7 @@ void ViewerApp::SetupScene()
 	//MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 	//MeshMap["suzanne"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("suzanne.obj"));
 	//MeshMap["tetra"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("tetra.obj"));
-	MeshMap["bigfloor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("bigfloor.obj"));
+//	MeshMap["bigfloor"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("bigfloor.obj"));
 	MeshMap["cube"] = new Mesh3D(boost::filesystem::path(meshDirectoryPath).append("cube.obj"));
 
 	// Set up physics
@@ -364,7 +364,7 @@ void ViewerApp::SetupScene()
 	MeshMap["tetra"]->PhysicRigidBody->LinearMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0.0f, -0.1f, 0.0f);
 	MeshMap["tetra"]->PhysicRigidBody->AngularMomentum = MeshMap["tetra"]->PhysicRigidBody->Mass * glm::vec3(0, 0.1f, 0.1f);
 	MeshMap["tetra"]->PhysicRigidBody->SetForceFunction(GravityForce);
-*/
+	
 	MeshMap["bigfloor"]->PhysicRigidBody->SetState(
 		glm::vec3(0.0f, -3.0f, 0.0f),
 		glm::identity<glm::quat>(),
@@ -372,7 +372,7 @@ void ViewerApp::SetupScene()
 		glm::vec3(0.0f, 0.0f, 0.0f)
 	);
 	MeshMap["bigfloor"]->PhysicRigidBody->SetImmovable(true);
-
+	*/
 	for (std::pair<std::string, Mesh3D*> p : MeshMap)
 	{
 		physicEngine.AddRigidBody(p.second->PhysicRigidBody);

@@ -8,39 +8,12 @@
 #include <glm/vec3.hpp>
 #include <glm/mat3x3.hpp>
 
-#include "Edge.h"
+#include "geometry/Edge.h"
+#include "geometry/Face.h"
 
 
 namespace PhysicEngine
 {
-
-	/** A vertex with additional inforation, suitable for rendering */
-	typedef struct {
-		glm::vec3 position;
-		glm::vec3 normal;
-	} RenderVertex;
-
-
-	/** A struct containing information to render a whole physic object */
-	typedef struct {
-		std::vector<RenderVertex> vertices;
-		std::vector<unsigned int> elements;
-	} RenderPolyhedronData;
-
-
-	/** 
-	 * A 3d vertex 
-	 */
-	typedef glm::vec3 Vertex;
-
-
-	/** A face */
-	typedef struct {
-		glm::ivec3 vId;
-		glm::vec3 n;
-		std::vector<unsigned int> vertexIds;
-	} Face;
-
 
 	/** A 3d bounding box. Faces are quads */
 	typedef struct BoundingBox {
@@ -68,7 +41,7 @@ namespace PhysicEngine
 	typedef struct Object3D {
 		enum Type { EMPTY = 0, VERTEX, EDGE, FACE };	// Type of polygon
 		Type type;								
-		std::vector<Vertex> vertices;			// If the type is VERTEX, the edges list will be stored here
+		std::vector<glm::vec3> vertices;			// If the type is VERTEX, the edges list will be stored here
 		std::vector<Edge> edges;				// If the type is EDGE, the edges list will be stored here
 		std::vector<Face> faces;				// If the type is FACE, the edges list will be stored here
 	} Object3D;
@@ -76,7 +49,7 @@ namespace PhysicEngine
 
 	/** The contact set between two convex polyhedrons */
 	typedef struct {
-		double min, max;						// [max, min] interval of the projection
+		float min, max;						// [max, min] interval of the projection
 		ContactSet sMin, sMax;
 	} ProjectionInfo;
 

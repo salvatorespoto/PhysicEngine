@@ -1,5 +1,4 @@
-#ifndef FUNCTIONS_H
-#define FUNCTIONS_H
+#pragma once
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -9,7 +8,6 @@
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
-#include <glm/gtc/epsilon.hpp>
 
 #include "DataTypes.h"
 #include "RigidBody.h"
@@ -19,19 +17,6 @@
 namespace PhysicEngine
 {
 
-	const float EPSILON_ZERO = 0.00001f;
-
-	/**
-	 * Compares two floating values
-	 *
-	 * @param f0 
-	 * @param f1
-	 */
-	bool Equal(float f0, float f1);
-
-	bool GreaterThan(float f0, float f1);
-
-	bool LessThan(float f0, float f1);
 
 	/**
 	 * Test intersection between a ray and an oriented bounding box 
@@ -63,7 +48,7 @@ namespace PhysicEngine
 	 * @param outMin the output minimum value projection
 	 * @param outMax the output minimum value projection
 	 */
-	void ComputeRigidBodyProjectionOnAxis(const RigidBody& c0, const glm::vec3& axis, double& outMin, double& outMax);
+	void ComputeRigidBodyProjectionOnAxis(const RigidBody& c0, const glm::vec3& axis, float& outMin, float& outMax);
 
 
 	/**
@@ -85,8 +70,8 @@ namespace PhysicEngine
 	 * @param
 	 * @param
 	 */
-	bool NoIntersect(double tMax, const float& speed, ProjectionInfo& projectionInfo0, ProjectionInfo& projectionInfo1,
-		ProjectionInfo& pCurr0, ProjectionInfo& pCurr1, int& side, double& tFirst, double& tLast);
+	bool NoIntersect(float tMax, const float& speed, ProjectionInfo& projectionInfo0, ProjectionInfo& projectionInfo1,
+		ProjectionInfo& pCurr0, ProjectionInfo& pCurr1, int& side, float& tFirst, float& tLast);
 
 
 	/**
@@ -96,7 +81,7 @@ namespace PhysicEngine
 	 * @param c0 the first convex polyhedron* @param
 	 */
 	void GetIntersection(RigidBody& c0, RigidBody& c1,
-		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, double tFirst, std::vector<Contact>& outContacts);
+		ProjectionInfo& pInfo0, ProjectionInfo& pInfo1, int side, float tFirst, std::vector<Contact>& outContacts);
 	
 
 	/**
@@ -116,5 +101,3 @@ namespace PhysicEngine
 	 */
 	std::vector<Contact> GetCoplanarFaceFaceIntersection(RigidBody& rb0, RigidBody& rb1, std::vector<Object3D> f0, std::vector<Object3D> f1);
 }
-
-#endif

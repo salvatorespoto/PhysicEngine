@@ -166,15 +166,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="include\PhysicEngine\custom_map.cpp" />
+    <ClCompile Include="include\PhysicEngine\geometry\Face.cpp" />
     <ClCompile Include="include\PhysicEngine\collision.cpp" />
-    <ClCompile Include="include\PhysicEngine\Edge.cpp" />
+    <ClCompile Include="include\PhysicEngine\geometry\Edge.cpp" />
     <ClCompile Include="include\PhysicEngine\Engine.cpp" />
     <ClCompile Include="include\PhysicEngine\DataTypes.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="include\PhysicEngine\force.cpp" />
     <ClCompile Include="include\PhysicEngine\Functions.cpp" />
     <ClCompile Include="include\PhysicEngine\LPCSolver.cpp" />
+    <ClCompile Include="include\PhysicEngine\math\comparison.cpp" />
     <ClCompile Include="include\PhysicEngine\Memory.cpp" />
     <ClCompile Include="Mesh3D.cpp" />
     <ClCompile Include="main.cpp" />
@@ -186,19 +187,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="include\PhysicEngine\custom_map.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\Face.h" />
     <ClInclude Include="include\PhysicEngine\collision.h" />
     <ClInclude Include="include\PhysicEngine\constants.h" />
-    <ClInclude Include="include\PhysicEngine\Edge.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\Edge.h" />
     <ClInclude Include="include\PhysicEngine\Engine.h" />
     <ClInclude Include="include\PhysicEngine\force.h" />
     <ClInclude Include="include\PhysicEngine\Functions.h" />
     <ClInclude Include="include\PhysicEngine\DataTypes.h" />
+    <ClInclude Include="include\PhysicEngine\math\comparison.h" />
     <ClInclude Include="include\tini_obj_loader.h" />
     <ClInclude Include="include\PhysicEngine\LPCSolver.h" />
     <ClInclude Include="include\PhysicEngine\Memory.h" />
     <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="include\PhysicEngine\QuadraticSolver.h" />
+    <ClInclude Include="include\PhysicEngine\render\render.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="include\PhysicEngine\RigidBody.h" />
     <ClInclude Include="Shader.h" />

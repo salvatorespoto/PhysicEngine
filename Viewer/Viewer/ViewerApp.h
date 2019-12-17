@@ -97,8 +97,8 @@ private:
 	int ViewportWidth;						/**< Viewport width */
 	int ViewportHeight;						/**< Viewport height */
 
-	double MouseXCoordinate = 99999.0f;		/**< Track the X mouse coordinate */
-	double MouseYCoordinate = 99999.0f;		/**< Track the Y mouse coordinate */
+	float MouseXCoordinate = 99999.0f;		/**< Track the X mouse coordinate */
+	float MouseYCoordinate = 99999.0f;		/**< Track the Y mouse coordinate */
 
 	GLuint ShaderProgram;
 	

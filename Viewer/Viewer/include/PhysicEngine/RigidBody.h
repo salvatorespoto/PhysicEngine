@@ -14,10 +14,10 @@
 #include "External/Eigen/Eigenvalues"
 
 #include "constants.h"
-#include "custom_map.h"
 #include "DataTypes.h"
 #include "force.h"
-#include "Edge.h"
+#include "geometry/Edge.h"
+#include "render/render.h"
 
 
 
@@ -35,31 +35,34 @@ namespace PhysicEngine
 	public:
 
 		/** GEOMETRIC PROPERTIES */
-		std::vector<Vertex> Vertices;		/**< List of verticies */
-		std::vector<Edge> Edges;			/**< List of edges */
-		std::vector<Face> Faces;			/**< List of faces */
+		std::vector<glm::vec3> Vertices;			/**< List of verticies */
+		std::vector<Face> Faces;					/**< List of faces. Faces could have an arbitrary number of sides */
+		std::vector<glm::vec3> EdgesDirs;			/**< List of edges directions */
+
+		/** RENDERING */
+		RenderPolyhedron RenderMesh;				/**< A triangulated representation for rendering /
 
 		/** PHYSIC PROPERTIES */
-		glm::vec3 CenterOfMass;				/**< Center of mass */
-		float Mass;							/**< Mass */
-		float InvertedMass;					/**< Inverted mass = 1/Mass */
-		glm::mat3 IntertiaTensor;			/**< Intertia tensor */
-		glm::mat3 InvertedIntertiaTensor;	/**< Inverted inertia tensor = IntertiaTensor^-1 */
+		glm::vec3 CenterOfMass;						/**< Center of mass */
+		float Mass;									/**< Mass */
+		float InvertedMass;							/**< Inverted mass = 1/Mass */
+		glm::mat3 IntertiaTensor;					/**< Intertia tensor */
+		glm::mat3 InvertedIntertiaTensor;			/**< Inverted inertia tensor = IntertiaTensor^-1 */
 
 		/* The PRIMARY STATE is made from all the variables that are necessary to define the physic object 
 		   state at the current simulation time */
-		glm::vec3 Position;					/**< PRIMARY STATE: position of the object center of mass in wolrd coordinates */
-		glm::quat OrientationQuaternion;	/**< PRIMARY STATE: a quaternion storing the object orientation */
-		glm::vec3 LinearMomentum;			/**< PRIMARY STATE: linear momentum */
-		glm::vec3 AngularMomentum;			/**< PRIMARY STATE: angular momentum */
+		glm::vec3 Position;							/**< PRIMARY STATE: position of the object center of mass in wolrd coordinates */
+		glm::quat OrientationQuaternion;			/**< PRIMARY STATE: a quaternion storing the object orientation */
+		glm::vec3 LinearMomentum;					/**< PRIMARY STATE: linear momentum */
+		glm::vec3 AngularMomentum;					/**< PRIMARY STATE: angular momentum */
 
 		/* The SECONDARY STATE holds physical quantities derived from the PRIMARY STATE */
-		glm::mat3 OrientationMatrix;		/**< SECONDARY STATE: a matrix storing the object orientation */
-		glm::vec3 LinearVelocity;			/**< SECONDARY STATE: linear velocity */
-		glm::vec3 AngularVelocity;			/**< SECONDARY STATE: angular velocity */
+		glm::mat3 OrientationMatrix;				/**< SECONDARY STATE: a matrix storing the object orientation */
+		glm::vec3 LinearVelocity;					/**< SECONDARY STATE: linear velocity */
+		glm::vec3 AngularVelocity;					/**< SECONDARY STATE: angular velocity */
 
 		/** Model transformation matrix */
-		glm::mat4 ModelMatrix;				/**< Store the object rotation and translation in the world, computed from object SECONDARY STATE */
+		glm::mat4 ModelMatrix;						/**< Store the object rotation and translation in the world, computed from object SECONDARY STATE */
 
 
 		/* Forces function acting on the object */
@@ -87,9 +90,6 @@ namespace PhysicEngine
 		/** Oriented bounding box that contains this polyhedron */
 		BoundingBox boundingBox;
 
-
-		RigidBody() {}
-
 		/**
 		 * Construct a convex polyhedron from a vertex list and a triangle face list.
 		 * Note that only triangulated convex polygon are supported,
@@ -100,6 +100,14 @@ namespace PhysicEngine
 		 * @param the list of Polyhedron Face
 		 */
 		RigidBody(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles);
+
+
+		/**
+		 * Get a triangulated 3d mesh of this RigidBody
+		 *
+		 * @return A triangulated 3d mesh 
+		 */
+		RenderPolyhedron GetRenderMesh();
 
 		/**
 		 * Set the force function acting on the rigid body
@@ -147,7 +155,6 @@ namespace PhysicEngine
 			InternalTorque += torque;
 		}
 
-
 		/**
 		 * Update the rigid body STATE given.
 		 * This method implements a 4th order Runge Kutta method to solve the equations of the motion.
@@ -155,21 +162,46 @@ namespace PhysicEngine
 		void UpdateState(float t, float dt);
 
 		/**
-		 * Compute the mass, the center of mass and the inertia tensor for the polyhedron
-		 */
-		void ComputeCenterOfMassAndInertiaTensor();
-
-		/**
 		 * Compute the oriented bounding box that contains the rigid body
 		 */
 		void ComputeOrientedBoundingBox();
 
-		/**
-		 * Get data suited for the rendering of the rigid body
-		 */
-		RenderPolyhedronData GetRenderPolyhedronData();
-	
+
 	private:
+
+		/**
+		 * Helper function used to build the internal geometrical representation from a collection of vertices and triangles
+		 *
+		 * Build the internal engine representation of a rigid object. An object is represented as a collection of faces
+		 * and each faces is a collection of edges. Each edges has two indexes that points to the vertices coordinates
+		 * in the RigidBody vertices list.
+		 *
+		 * @param vertices The collection of vertices coordinates
+		 * @param triangles The collectiono triangular faces
+		 */
+		void BuildGeometry(std::vector<unsigned int>& triangles);
+
+
+		/** 
+		 * Builds a triangulated representation of the RigidBody for rendering
+		 *
+		 * @param triangles The list of mesh triangles
+		 * @return A RenderPolyhedron
+		 */
+		void BuildRenderMesh(std::vector<unsigned int> triangles);
+
+		/**
+		 * Helper function that computes unique edge directions.
+		 *
+		 * This function parse all faces edges and build a list of edges directions.
+		 * When two edges have opposite direction, the funciton store only one of them.
+		 */
+		void ComputeUniqueEdgeDirections();
+
+		/**
+		 * Compute the mass, the center of mass and the inertia tensor for the polyhedron
+		 */
+		void ComputeCenterOfMassAndInertiaTensor(std::vector<unsigned int>& triangles);
 
 		/**
 		 * Helper function used in ComputeCenterOfMassAndIntertiaTensor()

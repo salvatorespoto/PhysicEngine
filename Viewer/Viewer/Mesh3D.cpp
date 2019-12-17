@@ -5,6 +5,8 @@
 
 #include <algorithm>    
 
+#include "PhysicEngine/render/render.h"
+
 Mesh3D::Mesh3D(const boost::filesystem::path& objFilePath) 
 {	
 	LoadFromObjFile(objFilePath);
@@ -149,13 +151,13 @@ void Mesh3D::SetupRender()
 
 
 	// Setup physic convex hull rendering 
-	PhysicEngine::RenderPolyhedronData renderPolyHedronData = PhysicRigidBody->GetRenderPolyhedronData();
+	PhysicEngine::RenderPolyhedron mesh = PhysicRigidBody->GetRenderMesh();
 	
-	hullVAO.vertices.resize(renderPolyHedronData.vertices.size());
-	std::transform(renderPolyHedronData.vertices.begin(), renderPolyHedronData.vertices.end(), 
-		hullVAO.vertices.begin(), [](PhysicEngine::RenderVertex& rv) { Vertex3D v{rv.position, rv.normal}; return v; });
+	hullVAO.vertices.resize(mesh.Vertices.size());
+	std::transform(mesh.Vertices.begin(), mesh.Vertices.end(),
+		hullVAO.vertices.begin(), [](PhysicEngine::RenderVertex& rv) { Vertex3D v{rv.v, rv.n}; return v; });
 	
-	hullVAO.elements = renderPolyHedronData.elements;
+	hullVAO.elements = mesh.Triangles;
 
 	glGenVertexArrays(1, &hullVAO.VaoId);
 	glGenBuffers(1, &hullVAO.VboId);
@@ -164,7 +166,7 @@ void Mesh3D::SetupRender()
 	glBindVertexArray(hullVAO.VaoId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, hullVAO.VboId);
-	glBufferData(GL_ARRAY_BUFFER, renderPolyHedronData.vertices.size() * sizeof(Vertex3D), &hullVAO.vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh.Vertices.size() * sizeof(Vertex3D), &hullVAO.vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, hullVAO.EboId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, hullVAO.elements.size() * sizeof(unsigned int), &hullVAO.elements[0], GL_STATIC_DRAW);
