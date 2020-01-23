@@ -2,6 +2,8 @@
 
 #include <glm/vec3.hpp>
 
+#include "PhysicEngine/geometry/Object3D.h"
+
 
 namespace PhysicEngine
 {
@@ -16,10 +18,15 @@ namespace PhysicEngine
 	 * the parent RigidBody. The edges are assumed to be in COUNTERCLOCKWISE order, so the
 	 * Edge direction is Edge.P[1] - Edge.P[0]
 	 */
-	class Edge
+	class Edge : public Object3D
 	{
 
 	public:
+
+		/**
+		 * Construct an empty Edge
+		 */
+		Edge();
 
 		/**
 		 * Construct a new Edge
@@ -29,6 +36,16 @@ namespace PhysicEngine
 		 * @param i1 the second index of the edge in the parent RigidBody vertex list
 		 */
 		Edge(const Face *parent, int i0, int i1);
+
+		/**
+		 * Destructor
+		 */
+		~Edge() {};
+
+		/**
+		 * Set the parent rigid body
+		 */
+		void SetParentRigidBody(RigidBody* rb);
 
 		/**
 		 * Return the edge indexes

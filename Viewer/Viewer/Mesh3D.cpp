@@ -1,11 +1,15 @@
 #include "Mesh3D.h"
+#include <algorithm>    
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "include/tini_obj_loader/tini_obj_loader.h"
 
-#include <algorithm>    
 
+#include "PhysicEngine/geometry/Vertex.h"
+#include "PhysicEngine/geometry/Edge.h"
+#include "PhysicEngine/geometry/Face.h"
 #include "PhysicEngine/render/render.h"
+
 
 Mesh3D::Mesh3D(const boost::filesystem::path& objFilePath) 
 {	
@@ -16,10 +20,6 @@ Mesh3D::Mesh3D(const boost::filesystem::path& objFilePath)
 
 void Mesh3D::LoadFromObjFile(const boost::filesystem::path& objFilePath) 
 {
-	// Load the mesh and its convex hull from .obj file
-	// The supported file format is an .obj file with two shapes: the first has a name that starts with "Model" and
-	// is the 3D model mesh, whale the second it's the mesh convex hull and its name starts with "Hull"
-
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -117,6 +117,27 @@ void Mesh3D::LoadConvexHull(const tinyobj::mesh_t& mesh, const tinyobj::attrib_t
 		vertices.push_back(glm::vec3{ v.Position.x, v.Position.y, v.Position.z });
 
 	PhysicRigidBody = new PhysicEngine::RigidBody(vertices, tempElements);
+
+	// Create a triangulated mesh from the physics (untriangulated) mesh
+	int firstId = 0;
+	for (PhysicEngine::Face f : PhysicRigidBody->Faces)
+	{
+		Vertex3D v0{ f.V(0), f.N() };
+		Vertex3D v1{ f.V(1), f.N() };
+		hullVAO.vertices.push_back(v0);
+		hullVAO.vertices.push_back(v1);
+
+		for (size_t i = 2; i < f.size(); i++)
+		{
+			hullVAO.vertices.push_back(Vertex3D{ f.V(static_cast<int>(i)), f.N() });
+
+			hullVAO.elements.push_back(firstId);
+			hullVAO.elements.push_back(firstId + static_cast<int>(i) - 1);
+			hullVAO.elements.push_back(firstId + static_cast<int>(i));
+		};
+
+		firstId += f.size();
+	}
 }
 
 
@@ -151,22 +172,16 @@ void Mesh3D::SetupRender()
 
 
 	// Setup physic convex hull rendering 
-	PhysicEngine::RenderPolyhedron mesh = PhysicRigidBody->GetRenderMesh();
 	
-	hullVAO.vertices.resize(mesh.Vertices.size());
-	std::transform(mesh.Vertices.begin(), mesh.Vertices.end(),
-		hullVAO.vertices.begin(), [](PhysicEngine::RenderVertex& rv) { Vertex3D v{rv.v, rv.n}; return v; });
-	
-	hullVAO.elements = mesh.Triangles;
-
 	glGenVertexArrays(1, &hullVAO.VaoId);
 	glGenBuffers(1, &hullVAO.VboId);
 	glGenBuffers(1, &hullVAO.EboId);
 
+
 	glBindVertexArray(hullVAO.VaoId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, hullVAO.VboId);
-	glBufferData(GL_ARRAY_BUFFER, mesh.Vertices.size() * sizeof(Vertex3D), &hullVAO.vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, hullVAO.vertices.size() * sizeof(Vertex3D), &hullVAO.vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, hullVAO.EboId);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, hullVAO.elements.size() * sizeof(unsigned int), &hullVAO.elements[0], GL_STATIC_DRAW);
@@ -236,11 +251,11 @@ glm::mat4 Mesh3D::GetModelMatrix()
 }
 
 
-void Mesh3D::Draw(GLuint shaderProgramId) 
+void Mesh3D::Render(GLuint shaderProgramId) 
 {
-	// Set up model transform
-	GLuint modelLocation = glGetUniformLocation(shaderProgramId, "model");
-	glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(GetModelMatrix()));
+	// Set up model matrix 
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgramId, "model"), 
+		1, GL_FALSE, glm::value_ptr(GetModelMatrix()));
 	
 	if (RenderModel)
 	{
@@ -248,7 +263,7 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glBindVertexArray(modelVAO.VaoId);
-		glDrawElements(GL_TRIANGLES, modelVAO.elements.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(modelVAO.elements.size()), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 
@@ -265,7 +280,7 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 		glBindVertexArray(hullVAO.VaoId);
-		glDrawElements(GL_TRIANGLES, hullVAO.elements.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(hullVAO.elements.size()), GL_UNSIGNED_INT, 0);
 		glDisable(GL_BLEND);
 		glBindVertexArray(0);
 	}
@@ -273,7 +288,7 @@ void Mesh3D::Draw(GLuint shaderProgramId)
 	if (RenderBoundingBox)
 	{
 		glBindVertexArray(boundingBoxVAO.VaoId);
-		glDrawElements(GL_LINES, boundingBoxVAO.elements.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_LINES, static_cast<GLsizei>(boundingBoxVAO.elements.size()), GL_UNSIGNED_INT, 0);
 		glDisable(GL_BLEND);
 		glBindVertexArray(0);
 	}

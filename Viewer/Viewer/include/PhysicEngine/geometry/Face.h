@@ -3,10 +3,12 @@
 #include <vector>
 #include <glm/vec3.hpp>
 
+#include "PhysicEngine/geometry/Object3D.h"
+
 
 namespace PhysicEngine 
 {
-
+	class Vertex;
 	class RigidBody;
 	class Edge;
 
@@ -14,11 +16,16 @@ namespace PhysicEngine
 	/** 
 	 * A face of a Rigid Body
 	 */
-	class Face 
+	class Face : public Object3D
 	{
 
 	public:
 		
+		/**
+		 * Costruct an empty face.
+		 */
+		Face();
+
 		/** 
 		 * Costruct a new face.
 		 *
@@ -26,6 +33,23 @@ namespace PhysicEngine
 		 */
 		Face(const RigidBody* parent, std::vector<int> verticesIds);
 
+		/**
+		 * Costruct a new face.
+		 *
+		 * @param parent A pointer to the parent RigidBody
+		 */
+		Face(std::vector<Vertex> verticesIds);
+
+		/**
+		 * Destructor
+		 */
+		~Face() {};
+
+		/**
+		 * Set the parent rigid body
+		 */
+		void SetRigidBody(RigidBody* rb);
+		
 		/**
 		 * Return the number of vertices in the face
 		 *
@@ -80,8 +104,8 @@ namespace PhysicEngine
 	
 		size_t Size;
 		glm::vec3 Normal;
-		std::vector<int> VIds;
-		std::vector<Edge> Edges;
+		std::vector<int> VIds;		/**< Face vertices ids in the RigidBody vertices list */
+		std::vector<Edge> Edges;	/**< Face Edges */
 		const RigidBody* Parent;
 		
 	};

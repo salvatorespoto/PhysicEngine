@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "DataTypes.h"
-#include "Functions.h"
-#include "RigidBody.h"
-#include "collision.h"
+#include "PhysicEngine/DataTypes.h"
+#include "PhysicEngine/geometry/intersection.h"
+#include "PhysicEngine/physics/RigidBody.h"
+#include "PhysicEngine/collision/collision.h"
 
 
 /**

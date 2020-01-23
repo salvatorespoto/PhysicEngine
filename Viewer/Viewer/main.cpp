@@ -1,6 +1,4 @@
-// Copyright 2019 Salvatore Spoto
-
-#include "ViewerApp.h"
+#include "Viewer.h"
 
 
 /** 
@@ -10,7 +8,7 @@ int main()
 {
 	try 
 	{
-		ViewerApp::GetInstance().Run();
+		Viewer::GetInstance().Run();
 	}
 	catch (const std::exception& e) 
 	{

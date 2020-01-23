@@ -1,21 +1,24 @@
-#include <glm/gtx/quaternion.hpp>
 #include <map>
 #include <unordered_set>
 
-#include "math/comparison.h"
-#include "geometry/Edge.h"
-#include "render/render.h"
-#include "RigidBody.h"
+#define GLM_FORCE_SWIZZLE 
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+#include "PhysicEngine/math/comparison.h"
+#include "PhysicEngine/geometry/Edge.h"
+#include "PhysicEngine/geometry/Face.h"
+#include "PhysicEngine/render/render.h"
+#include "PhysicEngine/physics/RigidBody.h"
 
 
 namespace PhysicEngine
 {
 
 	RigidBody::RigidBody(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles)
-		: Vertices(vertices)
 	{
-		BuildGeometry(triangles);
-		BuildRenderMesh(triangles);
+		BuildGeometry(vertices, triangles);
+
 		ComputeUniqueEdgeDirections();
 		ComputeCenterOfMassAndInertiaTensor(triangles);
 		ComputeOrientedBoundingBox();
@@ -33,22 +36,42 @@ namespace PhysicEngine
 		return RenderMesh;
 	}
 
+	Edge RigidBody::GetEdge(std::vector<Vertex> vv)
+	{
+		std::vector<glm::vec3> idx;
+		for (Vertex v : vv) idx.push_back(v.V());
+		return edgeMap[idx];
+	}
 
-	void RigidBody::BuildGeometry(std::vector<unsigned int>& triangles)
+	Face RigidBody::GetFace(std::vector<Vertex> vv)
+	{
+		std::vector<glm::vec3> idx;
+		for (Vertex v : vv) idx.push_back(v.V());
+		return faceMap[idx];
+	}
+
+
+	void RigidBody::BuildGeometry(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles)
 	{
 
-		// Merge coplanar faces.
+		// Build Vertex list
+		for(glm::vec3 v : vertices) 
+		{
+			Vertices.push_back(Vertex { this, glm::vec4(v, 1.0f) });
+		}
+
+		// Merge coplanar faces:
 		// Stores all the faces grouped by their normals.
 		// Due the 3D mesh is convex all the face that have the same normal are adjacent and could be merged 
 		// into a single face.
 		std::unordered_map<glm::vec3, std::vector<glm::ivec2>, HashGlmVec3, EpsCompareGlmVec3> nfMap;
 
-		for (size_t j = 0; j < triangles.size(); j += 3) {
-
+		for (size_t j = 0; j < triangles.size(); j += 3) 
+		{
 			// Compute the face normal assuming the COUNTERCLOCKWISE order
 			glm::vec3 normal = glm::normalize(
-				glm::cross(Vertices[triangles[j + 1]] - Vertices[triangles[j]],
-					Vertices[triangles[j + 2]] - Vertices[triangles[j + 1]]));
+				glm::cross(vertices[triangles[j + 1]] - vertices[triangles[j]],
+					vertices[triangles[j + 2]] - vertices[triangles[j + 1]]));
 
 			std::vector<glm::ivec2> es;
 			es.push_back({ triangles[j], triangles[j + 1] });
@@ -91,12 +114,11 @@ namespace PhysicEngine
 		}
 
 		// Create the list of face vertices.
-		std::vector<Face> faces;
 		for (auto nf : nfMap)
 		{
 			std::vector<int> vId;
 
-			// Sort all edges so that the first vertex of a follower is the last vertex of the previous	one.
+			// Sort all edges so that the first vertex of a follower edge is the last vertex of the previous one edge.
 			for (int i = nf.second.back().y; !nf.second.empty();)
 			{
 				vId.push_back(i);
@@ -110,7 +132,22 @@ namespace PhysicEngine
 				nf.second.erase(e);
 			}
 
-			faces.push_back(Face(this, vId));
+			// Create the new face and add it to the data structures
+			Face f = Face(this, vId);
+			for (Edge e : f.Edges) 
+			{
+				// Add all face edge to RigidBody edgeMap, used to improve edge searching during collision computation
+				std::vector<glm::vec3> idx { e.V(0), e.V(1) };
+				edgeMap[idx] = e;
+			}
+
+			// Add the face to RigidBody faceMap, used to improve edge searching during collision computation
+			std::vector<glm::vec3> idx;
+			for (int i = 0; i < f.size(); i++) idx.push_back(f.V(i));
+			faceMap[idx] = f;
+
+			// Add the face to list of Faces
+			Faces.push_back(f);
 		}
 	}
 
@@ -134,34 +171,34 @@ namespace PhysicEngine
 	}
 
 
-	void RigidBody::BuildRenderMesh(std::vector<unsigned int> triangles)
+	void RigidBody::BuildRenderMesh(std::vector<glm::vec3>& vertices, std::vector<unsigned int> triangles)
 	{
 		for (size_t i = 0; i < triangles.size()-2; i++)
 		{
 			// Computing normal 
 			glm::vec3 n = glm::normalize(
-				glm::cross(Vertices[triangles[i + 1]] - Vertices[triangles[i]], Vertices[triangles[i + 2]] - Vertices[triangles[i + 1]])
+				glm::cross(vertices[triangles[i + 1]] - vertices[triangles[i]], vertices[triangles[i + 2]] - vertices[triangles[i + 1]])
 				);
 
-			RenderMesh.Vertices.push_back(RenderVertex{ Vertices[triangles[i]], n });
-			RenderMesh.Vertices.push_back(RenderVertex{ Vertices[triangles[i + 1]], n });
-			RenderMesh.Vertices.push_back(RenderVertex{ Vertices[triangles[i + 2]], n });
+			RenderMesh.Vertices.push_back(RenderVertex{ vertices[triangles[i]], n });
+			RenderMesh.Vertices.push_back(RenderVertex{ vertices[triangles[i + 1]], n });
+			RenderMesh.Vertices.push_back(RenderVertex{ vertices[triangles[i + 2]], n });
 		}
 
 		RenderMesh.Triangles = triangles;
 	}
 
 
-	void RigidBody::ComputeCenterOfMassAndInertiaTensor(std::vector<unsigned int>& triangles) {
-
+	void RigidBody::ComputeCenterOfMassAndInertiaTensor(std::vector<unsigned int>& triangles) 
+	{
 		float integral[10] = { 0,0,0,0,0,0,0,0,0,0 };
 
 		for (int i = 0; i < triangles.size(); i +=3) {
 
 			// Get the verticies of this triangle
-			glm::vec3 v0 = Vertices[triangles[i]];
-			glm::vec3 v1 = Vertices[triangles[i + 1]];
-			glm::vec3 v2 = Vertices[triangles[i + 2]];
+			glm::vec3 v0 = Vertices[triangles[i]].V();
+			glm::vec3 v1 = Vertices[triangles[i + 1]].V();
+			glm::vec3 v2 = Vertices[triangles[i + 2]].V();
 
 			// Get cross product of edges [v1-v0] x [v2-v1] 
 			glm::vec3 edge0 = v1 - v0;
@@ -251,10 +288,10 @@ namespace PhysicEngine
 		Eigen::Matrix<float, 3, 3> covarianceMatrix;
 		float means[3] = { 0, 0, 0 };
 
-		for (glm::vec3 v : Vertices) {
-			means[0] += v.x,
-				means[1] += v.y,
-				means[2] += v.z;
+		for (Vertex v : Vertices) {
+			means[0] += v.V().x,
+			means[1] += v.V().y,
+			means[2] += v.V().z;
 		}
 
 		means[0] /= Vertices.size();
@@ -266,8 +303,8 @@ namespace PhysicEngine
 			for (int j = 0; j < 3; j++) {
 
 				covarianceMatrix(i, j) = 0.0;
-				for (glm::vec3 v : Vertices) {
-					covarianceMatrix(i, j) += (means[i] - v[i]) * (means[j] - v[j]);
+				for (Vertex v : Vertices) {
+					covarianceMatrix(i, j) += (means[i] - v.V()[i]) * (means[j] - v.V()[j]);
 				}
 
 				covarianceMatrix(i, j) /= Vertices.size() - 1;
@@ -283,9 +320,9 @@ namespace PhysicEngine
 		// Compute the projection of points over the eigenvectors direction
 		glm::vec3 min = { 9999, 9999, 9999 };
 		glm::vec3 max = { -9999, -9999, -9999 };
-		for (glm::vec3 v : Vertices) {
-			min = glm::min(glm::vec3(glm::dot(c0, v), glm::dot(c1, v), glm::dot(c2, v)), min);
-			max = glm::max(glm::vec3(glm::dot(c0, v), glm::dot(c1, v), glm::dot(c2, v)), max);
+		for (Vertex v : Vertices) {
+			min = glm::min(glm::vec3(glm::dot(c0, v.V().xyz()), glm::dot(c1, v.V().xyz()), glm::dot(c2, v.V().xyz())), min);
+			max = glm::max(glm::vec3(glm::dot(c0, v.V().xyz()), glm::dot(c1, v.V().xyz()), glm::dot(c2, v.V().xyz())), max);
 		}
 
 		// Center of the bouding box
@@ -331,7 +368,7 @@ namespace PhysicEngine
 
 	void RigidBody::UpdateState(float t, float dt)
 	{
-	/*	float halfdt = dt / 2.0f;
+		float halfdt = dt / 2.0f;
 		float sixthdt = dt / 6.0f;
 
 		glm::vec3 Xn, Pn, Ln, Vn, Wn;
@@ -397,7 +434,7 @@ namespace PhysicEngine
 
 		ComputeSecondaryState(Position, OrientationQuaternion, LinearMomentum, AngularMomentum, 
 			OrientationMatrix, LinearVelocity, AngularVelocity);
-	*/	
+		
 		ComputeModelMatrix();
 
 		// Update exteranl force and torque

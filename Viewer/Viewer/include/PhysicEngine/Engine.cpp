@@ -1,4 +1,6 @@
-#include "Engine.h"
+#include "PhysicEngine/collision/collision.h"
+#include "PhysicEngine/Engine.h"
+
 
 namespace PhysicEngine
 {
@@ -56,7 +58,7 @@ namespace PhysicEngine
 			for (RigidBody* rbB : Objects)
 			{
 				if (rbA == rbB) break;
-				std::vector<Contact> cs = TestRigidBodyIntersect(currentTime, timeStep, *rbA, *rbB);
+				std::vector<Contact> cs = ComputeRigidBodyContact(currentTime, timeStep, *rbA, *rbB);
 				if (!cs.empty())
 				{
 					rbA->IsColliding = true;

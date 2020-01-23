@@ -91,14 +91,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Workspace\PhysicEngine\Viewer\Viewer\include;C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\boost_1_72_0\;D:\Workspace\PhysicEngine\Viewer\Viewer\include;C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opengl32.lib;vulkan-1.lib;glfw3dll.lib;libboost_regex-vc142-mt-gd-x64-1_70.lib;glfw3.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\VulkanSDK\1.1.114.0\Lib;C:\Program Files (x86)\glfw-3.3.4\lib-vc2019</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opengl32.lib;vulkan-1.lib;glfw3dll.lib;glfw3.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\boost_1_72_0\lib64-msvc-14.2;C:\Program Files\VulkanSDK\1.1.114.0\Lib;C:\Program Files (x86)\glfw-3.3.4\lib-vc2019</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy config.ini $(SolutionDir)$(PlatformShortName)\$(Configuration)\config.ini</Command>
@@ -113,14 +113,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Workspace\PhysicEngine\Viewer\Viewer\include;C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\boost_1_72_0\;D:\Workspace\PhysicEngine\Viewer\Viewer\include;C:\Program Files\VulkanSDK\1.1.114.0\Include;C:\Program Files\GLM;C:\Program Files (x86)\glfw-3.3.4\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\VulkanSDK\1.1.114.0\Lib;C:\Program Files (x86)\glfw-3.3.4\lib-vc2019</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opengl32.lib;vulkan-1.lib;glfw3dll.lib;libboost_regex-vc142-mt-gd-x64-1_70.lib;opengl32.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\boost_1_72_0\lib64-msvc-14.2;C:\Program Files\VulkanSDK\1.1.114.0\Lib;C:\Program Files (x86)\glfw-3.3.4\lib-vc2019</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opengl32.lib;vulkan-1.lib;glfw3dll.lib;opengl32.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy config.ini $(SolutionDir)$(PlatformShortName)\$(Configuration)\config.ini</Command>
@@ -166,115 +166,62 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="include\PhysicEngine\geometry\extrema.cpp" />
     <ClCompile Include="include\PhysicEngine\geometry\Face.cpp" />
-    <ClCompile Include="include\PhysicEngine\collision.cpp" />
+    <ClCompile Include="include\PhysicEngine\collision\collision.cpp" />
     <ClCompile Include="include\PhysicEngine\geometry\Edge.cpp" />
     <ClCompile Include="include\PhysicEngine\Engine.cpp" />
-    <ClCompile Include="include\PhysicEngine\DataTypes.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="include\PhysicEngine\force.cpp" />
-    <ClCompile Include="include\PhysicEngine\Functions.cpp" />
     <ClCompile Include="include\PhysicEngine\LPCSolver.cpp" />
     <ClCompile Include="include\PhysicEngine\math\comparison.cpp" />
     <ClCompile Include="include\PhysicEngine\Memory.cpp" />
+    <ClCompile Include="include\PhysicEngine\geometry\intersection.cpp" />
     <ClCompile Include="Mesh3D.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="include\PhysicEngine\RigidBody.cpp" />
+    <ClCompile Include="include\PhysicEngine\physics\RigidBody.cpp" />
     <ClCompile Include="include\PhysicEngine\QuadraticSolver.cpp" />
+    <ClCompile Include="include\PhysicEngine\geometry\projection.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="ViewerApp.cpp" />
+    <ClCompile Include="include\PhysicEngine\geometry\Vertex.cpp" />
+    <ClCompile Include="Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\extrema.h" />
     <ClInclude Include="include\PhysicEngine\geometry\Face.h" />
-    <ClInclude Include="include\PhysicEngine\collision.h" />
+    <ClInclude Include="include\PhysicEngine\collision\collision.h" />
     <ClInclude Include="include\PhysicEngine\constants.h" />
     <ClInclude Include="include\PhysicEngine\geometry\Edge.h" />
     <ClInclude Include="include\PhysicEngine\Engine.h" />
     <ClInclude Include="include\PhysicEngine\force.h" />
-    <ClInclude Include="include\PhysicEngine\Functions.h" />
     <ClInclude Include="include\PhysicEngine\DataTypes.h" />
     <ClInclude Include="include\PhysicEngine\math\comparison.h" />
     <ClInclude Include="include\tini_obj_loader.h" />
     <ClInclude Include="include\PhysicEngine\LPCSolver.h" />
     <ClInclude Include="include\PhysicEngine\Memory.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\intersection.h" />
     <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="include\PhysicEngine\QuadraticSolver.h" />
     <ClInclude Include="include\PhysicEngine\render\render.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\projection.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\Object3D.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="include\PhysicEngine\RigidBody.h" />
+    <ClInclude Include="include\PhysicEngine\physics\RigidBody.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="include\PhysicEngine\geometry\Vertex.h" />
     <ClInclude Include="Vertex3D.h" />
-    <ClInclude Include="ViewerApp.h" />
+    <ClInclude Include="Viewer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini" />
-    <None Include="packages.config" />
     <None Include="shaders\shader.vs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Viewer.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\boost.1.70.0.0\build\boost.targets" Condition="Exists('..\packages\boost.1.70.0.0\build\boost.targets')" />
-    <Import Project="..\packages\boost_date_time-vc142.1.70.0.0\build\boost_date_time-vc142.targets" Condition="Exists('..\packages\boost_date_time-vc142.1.70.0.0\build\boost_date_time-vc142.targets')" />
-    <Import Project="..\packages\boost_filesystem-vc142.1.70.0.0\build\boost_filesystem-vc142.targets" Condition="Exists('..\packages\boost_filesystem-vc142.1.70.0.0\build\boost_filesystem-vc142.targets')" />
-    <Import Project="..\packages\boost_log-vc142.1.70.0.0\build\boost_log-vc142.targets" Condition="Exists('..\packages\boost_log-vc142.1.70.0.0\build\boost_log-vc142.targets')" />
-    <Import Project="..\packages\boost_system-vc142.1.70.0.0\build\boost_system-vc142.targets" Condition="Exists('..\packages\boost_system-vc142.1.70.0.0\build\boost_system-vc142.targets')" />
-    <Import Project="..\packages\boost_thread-vc142.1.70.0.0\build\boost_thread-vc142.targets" Condition="Exists('..\packages\boost_thread-vc142.1.70.0.0\build\boost_thread-vc142.targets')" />
-    <Import Project="..\packages\boost_chrono-vc142.1.70.0.0\build\boost_chrono-vc142.targets" Condition="Exists('..\packages\boost_chrono-vc142.1.70.0.0\build\boost_chrono-vc142.targets')" />
-    <Import Project="..\packages\boost_log_setup-vc142.1.70.0.0\build\boost_log_setup-vc142.targets" Condition="Exists('..\packages\boost_log_setup-vc142.1.70.0.0\build\boost_log_setup-vc142.targets')" />
-    <Import Project="..\packages\boost_atomic-vc142.1.70.0.0\build\boost_atomic-vc142.targets" Condition="Exists('..\packages\boost_atomic-vc142.1.70.0.0\build\boost_atomic-vc142.targets')" />
-    <Import Project="..\packages\boost_regex-vc142.1.70.0.0\build\boost_regex-vc142.targets" Condition="Exists('..\packages\boost_regex-vc142.1.70.0.0\build\boost_regex-vc142.targets')" />
-    <Import Project="..\packages\boost_container-vc142.1.70.0.0\build\boost_container-vc142.targets" Condition="Exists('..\packages\boost_container-vc142.1.70.0.0\build\boost_container-vc142.targets')" />
-    <Import Project="..\packages\boost_context-vc142.1.70.0.0\build\boost_context-vc142.targets" Condition="Exists('..\packages\boost_context-vc142.1.70.0.0\build\boost_context-vc142.targets')" />
-    <Import Project="..\packages\boost_coroutine-vc142.1.70.0.0\build\boost_coroutine-vc142.targets" Condition="Exists('..\packages\boost_coroutine-vc142.1.70.0.0\build\boost_coroutine-vc142.targets')" />
-    <Import Project="..\packages\boost_contract-vc142.1.70.0.0\build\boost_contract-vc142.targets" Condition="Exists('..\packages\boost_contract-vc142.1.70.0.0\build\boost_contract-vc142.targets')" />
-    <Import Project="..\packages\boost_exception-vc142.1.70.0.0\build\boost_exception-vc142.targets" Condition="Exists('..\packages\boost_exception-vc142.1.70.0.0\build\boost_exception-vc142.targets')" />
-    <Import Project="..\packages\boost_fiber-vc142.1.70.0.0\build\boost_fiber-vc142.targets" Condition="Exists('..\packages\boost_fiber-vc142.1.70.0.0\build\boost_fiber-vc142.targets')" />
-    <Import Project="..\packages\boost_graph-vc142.1.70.0.0\build\boost_graph-vc142.targets" Condition="Exists('..\packages\boost_graph-vc142.1.70.0.0\build\boost_graph-vc142.targets')" />
-    <Import Project="..\packages\boost_iostreams-vc142.1.70.0.0\build\boost_iostreams-vc142.targets" Condition="Exists('..\packages\boost_iostreams-vc142.1.70.0.0\build\boost_iostreams-vc142.targets')" />
-    <Import Project="..\packages\boost_locale-vc142.1.70.0.0\build\boost_locale-vc142.targets" Condition="Exists('..\packages\boost_locale-vc142.1.70.0.0\build\boost_locale-vc142.targets')" />
-    <Import Project="..\packages\boost_math_c99-vc142.1.70.0.0\build\boost_math_c99-vc142.targets" Condition="Exists('..\packages\boost_math_c99-vc142.1.70.0.0\build\boost_math_c99-vc142.targets')" />
-    <Import Project="..\packages\boost_math_tr1-vc142.1.70.0.0\build\boost_math_tr1-vc142.targets" Condition="Exists('..\packages\boost_math_tr1-vc142.1.70.0.0\build\boost_math_tr1-vc142.targets')" />
-    <Import Project="..\packages\boost_program_options-vc142.1.70.0.0\build\boost_program_options-vc142.targets" Condition="Exists('..\packages\boost_program_options-vc142.1.70.0.0\build\boost_program_options-vc142.targets')" />
-    <Import Project="..\packages\boost_random-vc142.1.70.0.0\build\boost_random-vc142.targets" Condition="Exists('..\packages\boost_random-vc142.1.70.0.0\build\boost_random-vc142.targets')" />
-    <Import Project="..\packages\boost_stacktrace_noop-vc142.1.70.0.0\build\boost_stacktrace_noop-vc142.targets" Condition="Exists('..\packages\boost_stacktrace_noop-vc142.1.70.0.0\build\boost_stacktrace_noop-vc142.targets')" />
-    <Import Project="..\packages\boost_type_erasure-vc142.1.70.0.0\build\boost_type_erasure-vc142.targets" Condition="Exists('..\packages\boost_type_erasure-vc142.1.70.0.0\build\boost_type_erasure-vc142.targets')" />
-    <Import Project="..\packages\boost_wave-vc142.1.70.0.0\build\boost_wave-vc142.targets" Condition="Exists('..\packages\boost_wave-vc142.1.70.0.0\build\boost_wave-vc142.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Questo progetto fa riferimento a uno o più pacchetti NuGet che non sono presenti in questo computer. Usare lo strumento di ripristino dei pacchetti NuGet per scaricarli. Per altre informazioni, vedere http://go.microsoft.com/fwlink/?LinkID=322105. Il file mancante è {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\boost.1.70.0.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.70.0.0\build\boost.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_date_time-vc142.1.70.0.0\build\boost_date_time-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_date_time-vc142.1.70.0.0\build\boost_date_time-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_filesystem-vc142.1.70.0.0\build\boost_filesystem-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_filesystem-vc142.1.70.0.0\build\boost_filesystem-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_log-vc142.1.70.0.0\build\boost_log-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_log-vc142.1.70.0.0\build\boost_log-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_system-vc142.1.70.0.0\build\boost_system-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_system-vc142.1.70.0.0\build\boost_system-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_thread-vc142.1.70.0.0\build\boost_thread-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_thread-vc142.1.70.0.0\build\boost_thread-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_chrono-vc142.1.70.0.0\build\boost_chrono-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_chrono-vc142.1.70.0.0\build\boost_chrono-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_log_setup-vc142.1.70.0.0\build\boost_log_setup-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_log_setup-vc142.1.70.0.0\build\boost_log_setup-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_atomic-vc142.1.70.0.0\build\boost_atomic-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_atomic-vc142.1.70.0.0\build\boost_atomic-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_regex-vc142.1.70.0.0\build\boost_regex-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_regex-vc142.1.70.0.0\build\boost_regex-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_container-vc142.1.70.0.0\build\boost_container-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_container-vc142.1.70.0.0\build\boost_container-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_context-vc142.1.70.0.0\build\boost_context-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_context-vc142.1.70.0.0\build\boost_context-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_coroutine-vc142.1.70.0.0\build\boost_coroutine-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_coroutine-vc142.1.70.0.0\build\boost_coroutine-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_contract-vc142.1.70.0.0\build\boost_contract-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_contract-vc142.1.70.0.0\build\boost_contract-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_exception-vc142.1.70.0.0\build\boost_exception-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_exception-vc142.1.70.0.0\build\boost_exception-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_fiber-vc142.1.70.0.0\build\boost_fiber-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_fiber-vc142.1.70.0.0\build\boost_fiber-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_graph-vc142.1.70.0.0\build\boost_graph-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_graph-vc142.1.70.0.0\build\boost_graph-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_iostreams-vc142.1.70.0.0\build\boost_iostreams-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_iostreams-vc142.1.70.0.0\build\boost_iostreams-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_locale-vc142.1.70.0.0\build\boost_locale-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_locale-vc142.1.70.0.0\build\boost_locale-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_math_c99-vc142.1.70.0.0\build\boost_math_c99-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_math_c99-vc142.1.70.0.0\build\boost_math_c99-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_math_tr1-vc142.1.70.0.0\build\boost_math_tr1-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_math_tr1-vc142.1.70.0.0\build\boost_math_tr1-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_program_options-vc142.1.70.0.0\build\boost_program_options-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_program_options-vc142.1.70.0.0\build\boost_program_options-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_random-vc142.1.70.0.0\build\boost_random-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_random-vc142.1.70.0.0\build\boost_random-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_stacktrace_noop-vc142.1.70.0.0\build\boost_stacktrace_noop-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_stacktrace_noop-vc142.1.70.0.0\build\boost_stacktrace_noop-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_type_erasure-vc142.1.70.0.0\build\boost_type_erasure-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_type_erasure-vc142.1.70.0.0\build\boost_type_erasure-vc142.targets'))" />
-    <Error Condition="!Exists('..\packages\boost_wave-vc142.1.70.0.0\build\boost_wave-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost_wave-vc142.1.70.0.0\build\boost_wave-vc142.targets'))" />
-  </Target>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

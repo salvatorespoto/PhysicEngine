@@ -11,14 +11,16 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat3x3.hpp>
 
-#include "External/Eigen/Eigenvalues"
+#include "PhysicEngine/External/Eigen/Eigenvalues"
 
-#include "constants.h"
-#include "DataTypes.h"
-#include "force.h"
-#include "geometry/Edge.h"
-#include "render/render.h"
-
+#include "PhysicEngine/constants.h"
+#include "PhysicEngine/math/comparison.h"
+#include "PhysicEngine/DataTypes.h"
+#include "PhysicEngine/force.h"
+#include "PhysicEngine/geometry/Vertex.h"
+#include "PhysicEngine/geometry/Edge.h"
+#include "PhysicEngine/geometry/extrema.h"
+#include "PhysicEngine/render/render.h"
 
 
 namespace PhysicEngine
@@ -35,19 +37,35 @@ namespace PhysicEngine
 	public:
 
 		/** GEOMETRIC PROPERTIES */
-		std::vector<glm::vec3> Vertices;			/**< List of verticies */
+		std::vector<Vertex> Vertices;				/**< List of verticies */
 		std::vector<Face> Faces;					/**< List of faces. Faces could have an arbitrary number of sides */
 		std::vector<glm::vec3> EdgesDirs;			/**< List of edges directions */
+		
+		std::unordered_map<std::vector<glm::vec3>, Edge> edgeMap;	/**< Mapping edge vertices -> edge used to retrieve an edge from its direction */
+		std::unordered_map<std::vector<glm::vec3>, Face> faceMap;	/**< Mapping normal -> face used to retrieve a face from its normal */
+		
+		BoundingBox boundingBox;					/**< Oriented bounding box that contains this polyhedron */
+		
 
 		/** RENDERING */
 		RenderPolyhedron RenderMesh;				/**< A triangulated representation for rendering /
+
 
 		/** PHYSIC PROPERTIES */
 		glm::vec3 CenterOfMass;						/**< Center of mass */
 		float Mass;									/**< Mass */
 		float InvertedMass;							/**< Inverted mass = 1/Mass */
+		bool IsImmovable = false;					/**< True if the object cannot be moved */
 		glm::mat3 IntertiaTensor;					/**< Intertia tensor */
 		glm::mat3 InvertedIntertiaTensor;			/**< Inverted inertia tensor = IntertiaTensor^-1 */
+
+		ForceFunction Force;						/**< Forces function acting on the object */
+		TorqueFunction Torque;						/**< Torque function acting on the object */
+		glm::vec3 ExternalForce;					/**< The external force applyed to the object */
+		glm::vec3 ExternalTorque;					/**< The external torque applyed to the object */
+		glm::vec3 InternalForce;					/**< The internal force applyed to the object */
+		glm::vec3 InternalTorque;					/**< The external torque applyed to the object */
+
 
 		/* The PRIMARY STATE is made from all the variables that are necessary to define the physic object 
 		   state at the current simulation time */
@@ -56,40 +74,19 @@ namespace PhysicEngine
 		glm::vec3 LinearMomentum;					/**< PRIMARY STATE: linear momentum */
 		glm::vec3 AngularMomentum;					/**< PRIMARY STATE: angular momentum */
 
+
 		/* The SECONDARY STATE holds physical quantities derived from the PRIMARY STATE */
 		glm::mat3 OrientationMatrix;				/**< SECONDARY STATE: a matrix storing the object orientation */
 		glm::vec3 LinearVelocity;					/**< SECONDARY STATE: linear velocity */
 		glm::vec3 AngularVelocity;					/**< SECONDARY STATE: angular velocity */
 
+
 		/** Model transformation matrix */
 		glm::mat4 ModelMatrix;						/**< Store the object rotation and translation in the world, computed from object SECONDARY STATE */
+		
+		bool IsColliding = false;					/**< Set to true if the object is actually colliding */
 
-
-		/* Forces function acting on the object */
-		ForceFunction Force;
-
-		/* Torque function acting on the object */
-		TorqueFunction Torque;
-
-		/** The external force applyed to the object */
-		glm::vec3 ExternalForce;
-
-		/** The external torque applyed to the object */
-		glm::vec3 ExternalTorque;
-
-		/** The internal force applyed to the object */
-		glm::vec3 InternalForce;
-
-		/** The external torque applyed to the object */
-		glm::vec3 InternalTorque;
-
-		bool IsColliding = false;
-
-		bool IsImmovable = false;
-
-		/** Oriented bounding box that contains this polyhedron */
-		BoundingBox boundingBox;
-
+		
 		/**
 		 * Construct a convex polyhedron from a vertex list and a triangle face list.
 		 * Note that only triangulated convex polygon are supported,
@@ -166,6 +163,16 @@ namespace PhysicEngine
 		 */
 		void ComputeOrientedBoundingBox();
 
+		/**
+		 * Get an edge from two verticies
+		 */
+		Edge GetEdge(std::vector<Vertex> v);
+
+		/**
+		 * Get a Face from a list of verticies
+		 */
+		Face GetFace(std::vector<Vertex> v);
+
 
 	private:
 
@@ -179,7 +186,7 @@ namespace PhysicEngine
 		 * @param vertices The collection of vertices coordinates
 		 * @param triangles The collectiono triangular faces
 		 */
-		void BuildGeometry(std::vector<unsigned int>& triangles);
+		void BuildGeometry(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& triangles);
 
 
 		/** 
@@ -188,7 +195,7 @@ namespace PhysicEngine
 		 * @param triangles The list of mesh triangles
 		 * @return A RenderPolyhedron
 		 */
-		void BuildRenderMesh(std::vector<unsigned int> triangles);
+		void BuildRenderMesh(std::vector<glm::vec3>& vertices, std::vector<unsigned int> triangles);
 
 		/**
 		 * Helper function that computes unique edge directions.
@@ -222,8 +229,7 @@ namespace PhysicEngine
 		 * Update the model matrix from the PRIMARY and SECONDARY state
 		 */
 		void ComputeModelMatrix();
-	};
-	
+	};	
 }
 
 

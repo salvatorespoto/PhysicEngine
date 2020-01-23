@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="ViewerApp.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
@@ -36,22 +33,10 @@
     <ClCompile Include="Mesh3D.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="include\PhysicEngine\DataTypes.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="include\PhysicEngine\Functions.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="include\PhysicEngine\Engine.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
-    <ClCompile Include="include\PhysicEngine\RigidBody.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
     <ClCompile Include="include\PhysicEngine\force.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="include\PhysicEngine\collision.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
     <ClCompile Include="include\PhysicEngine\LPCSolver.cpp">
@@ -72,11 +57,29 @@
     <ClCompile Include="include\PhysicEngine\geometry\Face.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="include\PhysicEngine\geometry\projection.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\geometry\extrema.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\geometry\intersection.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\collision\collision.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="Viewer.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\geometry\Vertex.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="include\PhysicEngine\physics\RigidBody.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ViewerApp.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -101,19 +104,10 @@
     <ClInclude Include="include\PhysicEngine\DataTypes.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="include\PhysicEngine\Functions.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="include\PhysicEngine\Engine.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="include\PhysicEngine\RigidBody.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="include\PhysicEngine\force.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="include\PhysicEngine\collision.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="include\PhysicEngine\LPCSolver.h">
@@ -140,9 +134,32 @@
     <ClInclude Include="include\PhysicEngine\render\render.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="include\PhysicEngine\geometry\projection.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\geometry\extrema.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\geometry\intersection.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\collision\collision.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Viewer.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\geometry\Object3D.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\geometry\Vertex.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PhysicEngine\physics\RigidBody.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="config.ini">
       <Filter>File di risorse</Filter>
     </None>

@@ -1,5 +1,4 @@
-#ifndef MESH_3D_H
-#define MESH_3D_H
+#pragma once
 
 #include <boost/log/trivial.hpp>
 #include <boost/unordered_map.hpp>
@@ -13,11 +12,9 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "include/glad/glad.h"
 #include "include/tini_obj_loader/tini_obj_loader.h"
@@ -25,12 +22,12 @@
 #include "Vertex3D.h"
 
 #include "include/PhysicEngine/DataTypes.h"
-#include "include/PhysicEngine/RigidBody.h"
-#include <glm\gtx\quaternion.hpp>
-#include <glm\gtx\quaternion.hpp>
+#include "include/PhysicEngine/Physics/RigidBody.h"
 
 
-/** A struct containing info and data for vertex array object, vertex buffer and element buffer */
+/** 
+ * A struct containing info and data for vertex array object, vertex buffer and element buffer 
+ */
 typedef struct VAOAttributes {
 	GLuint VaoId;
 	GLuint VboId;
@@ -40,38 +37,23 @@ typedef struct VAOAttributes {
 } VAOAttributes;
 
 
-/** A mesh 3D mesh */
+/** 
+ * A 3D mesh 
+ */
 class Mesh3D 
 {
 
 public:
 
-	/** Show / hide bounding box*/
-	bool RenderBoundingBox = false;
-
-	/** Show / hide convex hull */
-	bool RenderConvexHull = false;
-
-	/** Show / hide model */
-	bool RenderModel = true;
-
-	/** The mesh model transfrom matrices */
+	bool RenderBoundingBox = false;			/** Show / hide bounding box*/
+	bool RenderConvexHull = false;			/** Show / hide convex hull */
+	bool RenderModel = true;				/** Show / hide model */
 
 	glm::mat4 ScaleMatrix = glm::mat4(1.0f);
-
 	glm::mat4 RotationMatrix = glm::mat4(1.0f);
-	
 	glm::mat4 TranslationMatrix = glm::mat4(1.0f);
 
-
-	/** Convex hull used from the physic engine */
 	PhysicEngine::RigidBody* PhysicRigidBody;
-
-	/** Load mesh Exception */
-	struct LoadMeshException : public std::exception
-	{
-		LoadMeshException(const char* msg) : std::exception(msg) {}
-	};
 
 	/** 
 	 * Load a mesh from an .obj file 
@@ -83,13 +65,21 @@ public:
 	/** 
 	 * Load a mesh from an .obj 
 	 *
+	 * Load the mesh and its convex hull from .obj file
+	 * The supported file format is an .obj file with two shapes: the first has a name that starts with "Model" and
+	 * is the 3D model mesh, whale the second it's the mesh convex hull and its name starts with "Hull"
 	 * @param meshFilePath the file path of the mesh to load
 	 */
 	void LoadFromObjFile(const boost::filesystem::path& objFilePath);
 
-	/** Get the model transformation matrix */
+	/** 
+	 * Get the model transformation matrix 
+	 */
 	glm::mat4 GetModelMatrix();
 
+	/** 
+	 *
+	 */
 	void SetModelMatrix(glm::mat4 M) 
 	{
 		glm::vec3 scale;
@@ -102,36 +92,44 @@ public:
 		TranslationMatrix = glm::translate(glm::mat4(1.0f), translation);
 	}
 	
+	/**
+	 *
+	 */
 	void Translate(glm::vec3 translation) 
 	{
 		TranslationMatrix = glm::translate(TranslationMatrix, translation);
 	}
 
+	/**
+	 *
+	 */
 	void Rotate(float angle, glm::vec3 axis)
 	{
 		RotationMatrix = glm::rotate(RotationMatrix, angle, axis);
 	}
 
+	/** 
+	 * Draw the mesh 
+	 */
+	void Render(GLuint shaderProgramId);
 
+	struct LoadMeshException : public std::exception
+	{
+		LoadMeshException(const char* msg) : std::exception(msg) {}
+	};
 
-	/** Draw the mesh */
-	void Draw(GLuint shaderProgramId);
 
 private:
 	
-	/** Rendering data for the model mesh */
-	VAOAttributes modelVAO;
+	VAOAttributes modelVAO;				/** Rendering data for the model mesh */
+	VAOAttributes hullVAO;				/** Rendering data for the hull mesh */
+	VAOAttributes boundingBoxVAO;		/** Rendering data for bounding box */
+	VAOAttributes centerOfMassVAO;		/** Rendering data for the center of mass */
+	
 
-	/** Rendering data for the hull mesh */
-	VAOAttributes hullVAO;
-
-	/** Rendering data for bounding box */
-	VAOAttributes boundingBoxVAO;
-
-	/** Rendering data for the center of mass */
-	VAOAttributes centerOfMassVAO;
-
-	/** Setup mesh for rendering */
+	/** 
+	 * Setup mesh for rendering 
+	 */
 	void SetupRender();
 
 	/** 
@@ -150,9 +148,15 @@ private:
 	 * @param outVertices The output vertex array
 	 * @param outIndices Tehe output index array
 	 */
-	void LoadMesh(const tinyobj::mesh_t& mesh, const tinyobj::attrib_t& attrib,
-		std::vector<Vertex3D>& outVertices, std::vector<unsigned int>& outIndices,
-		const bool normal, const bool color, const bool textCooord);
+	void LoadMesh(
+		const tinyobj::mesh_t& mesh, 
+		const tinyobj::attrib_t& attrib,
+		std::vector<Vertex3D>& outVertices, 
+		std::vector<unsigned int>& outIndices,
+		const bool normal, 
+		const bool color, 
+		const bool textCooord
+	);
 
 	/**
 	 * Build the physic conves hull 
@@ -160,7 +164,8 @@ private:
 	 * @param mesh A mesh object loaded with tinyobj library
 	 * @param attrib The attrib objet associated to the mesh, loaded with tinyobj library
 	 */
-	void LoadConvexHull(const tinyobj::mesh_t& mesh, const tinyobj::attrib_t& attrib);
+	void LoadConvexHull(
+		const tinyobj::mesh_t& mesh, 
+		const tinyobj::attrib_t& attrib
+	);
 };
-
-#endif

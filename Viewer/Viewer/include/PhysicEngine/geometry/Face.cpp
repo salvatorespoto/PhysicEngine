@@ -4,13 +4,15 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat3x3.hpp>
 
-#include "Face.h"
-#include "../RigidBody.h"
+#include "PhysicEngine/geometry/Face.h"
+#include "PhysicEngine/physics/RigidBody.h"
 
 
 namespace PhysicEngine 
 {
-		
+
+	Face::Face() {}
+
 	Face::Face(const RigidBody* parent, std::vector<int> verticesIds)
 		: Parent(parent), Size(verticesIds.size()), VIds(verticesIds)
 	{
@@ -23,7 +25,12 @@ namespace PhysicEngine
 
 		// Compute normal assuming COUNTERCLOCKWISE vertices order
 		Normal = glm::normalize(glm::cross(Edges[0].D(), Edges[1].D()));
-	};
+	}
+
+	void Face::SetRigidBody(RigidBody* rb)
+	{
+		Parent = rb;
+	}
 
 	size_t Face::size() const
 	{
@@ -37,12 +44,12 @@ namespace PhysicEngine
 		
 	glm::vec3 Face::V(int i) const
 	{
-		return Parent->Vertices[VIds[i]];
+		return Parent->Vertices[VIds[i]].V();
 	}
 		
 	glm::vec3 Face::MV(int i) const
 	{
-		return glm::mat3(Parent->ModelMatrix) * Parent->Vertices[VIds[i]];
+		return Parent->Vertices[VIds[i]].MV();
 	}
 
 	Edge Face::E(int i) const
