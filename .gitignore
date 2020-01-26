@@ -7,9 +7,6 @@
 Viewer/*
 !Viewer/Viewer/
 
-Viewer/Viewer/*
-!Viewer/Viewer/include/
-
 Viewer/Viewer/include/*
 !Viewer/Viewer/include/PhysicEngine
 
